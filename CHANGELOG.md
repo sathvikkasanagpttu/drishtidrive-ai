@@ -1,0 +1,61 @@
+# Changelog — DrishtiDrive AI Upgrade
+
+All notable changes to this project are documented in this file in accordance with [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Conventional Commits](https://www.conventionalcommits.org/).
+
+---
+
+## [2.0.0] - 2026-10-13
+
+### Phase 1: Fix the Foundation
+- **Evaluation Honesty:** Separated dataset evaluations in `backend/evaluate_integration.py` (`Dataset 2` vs `Test Eye State`). Made Dataset 2 (in-the-wild Indian truck driver conditions) headline benchmark: 72.00% accuracy, 69.67% closed recall, 74.33% open recall, 71.98% macro F1. Updated `README.md`, `docs/model_card.md`, and `docs/phase8_evaluation_report.md`.
+- **Alert Timing Latency:** Fixed onset tracking in `DebouncedStageStateMachine` to eliminate lag accumulation. Asserted alert latency within $\pm 0.05\text{s}$ tolerance of 0.8s, 1.8s, 3.0s thresholds in `tests/test_temporal_logic.py`.
+- **Real-Video Validation:** Resolved 59/60 uncertain frames bug on `reports/test_driver_feed.mp4` by tuning `PoseEyeDetector` for non-standard cabin lighting (uncertain rate dropped from 98.3% to 0.0%). Added `backend/evaluate_video.py`.
+- **Repo Hygiene:** Cleaned duplicate files (`architecture (2).md`, `requirements (2).md`, root-level `.pt` files), updated `.gitignore`, fixed Windows `E:\` paths, corrected repository clone URL, and aligned doc test counts.
+- **API CORS & Telemetry Integrity:** Restricted CORS origins to localhost by default; replaced fake default telemetry (`bpm: 72`, `ear: 0.35`) with explicit `None` / `"NO_DATA"`.
+
+### Phase 2: Better Detection & Multi-Signal Fusion
+- **3D Head Pose Estimation (`backend/head_pose.py`):** Derived pitch, yaw, and roll using `cv2.solvePnP` with 3D facial landmarks and 2D geometric fallback. Detects downward nodding (droop $> 18^\circ$) and inattention ($|\text{yaw}| > 25^\circ$).
+- **Distraction Detection (`backend/distraction.py`):** Added detection for looking away $> 2.0\text{s}$ (`HEAD_POSE_AWAY`), mobile phone usage (`PHONE_DISTRACTION`), and unfastened seatbelts (`NO_SEATBELT`).
+- **Multi-Signal Fusion (`backend/fusion.py`):** Implemented rolling PERCLOS over 30s window, rolling blink rate (BPM), yawn tracking (MAR $\ge 0.65$), transparent weighted risk scoring ($w_{\text{eye}}=0.40, w_{\text{perclos}}=0.25, w_{\text{pose}}=0.20, w_{\text{mar}}=0.15$), and optional `TinyTemporalLSTM`.
+- **Per-Driver Calibration (`backend/calibration.py`):** Added 30–60s calibration mode computing individual baseline openness and spontaneous blink rate, stored in local `driver_profile.json`.
+- **Night / IR Augmentation (`backend/training/transforms.py`):** Added low-light gamma shifts, Poisson/Gaussian sensor noise, Active NIR (850/940nm) simulation, and high-beam headlight glare.
+- **Multimodal Training Script (`backend/training/train_multimodal.py`):** Added subject-stratified splits (zero leakage) and per-condition evaluation across normal, glasses, sunglasses, night, and glare conditions.
+- **Dataset Download Guide (`docs/dataset_guide.md`):** Comprehensive instructions for NTHU-DDD, UTA-RLDD, YawDD, and DMD benchmarks.
+
+### Phase 3: Edge Edition (Raspberry Pi 4/5)
+- **ONNX & Dynamic INT8 Export (`backend/edge/export_onnx_int8.py`):** Exported `DepthwiseSeparableCNN` to ONNX (117.9 KB) and dynamic INT8 ONNX (48.5 KB, 58.9% reduction, cosine similarity **0.9998**).
+- **Knowledge Distillation (`backend/training/distillation.py`):** Soft logit distillation ($\tau=3.0, \alpha=0.65$) from MobileNetV2 into student DepthwiseSeparableCNN.
+- **Edge Headless Runtime (`backend/edge/edge_runner.py`):** Embedded execution loop with startup self-test, hardware accelerator switching (`cpu`, `coral_tpu`, `hailo_8`), and native `systemd` watchdog socket heartbeat (`sd_notify("WATCHDOG=1")`).
+- **Camera Tamper Detection (`backend/edge/tamper_detector.py`):** Detects complete lens occlusion, laser/sensor blinding, and severe defocus blur over consecutive frames.
+- **Hardware & Mock GPIO Actuator (`backend/edge/gpio_actuator.py`):** Controls RGB status LED, piezo buzzer cadences, tactile snooze push button, and haptic motor with mock fallback.
+- **Systemd Unit File (`deployment/systemd/drishtidrive.service`):** Configured with `Restart=always` and `WatchdogSec=15s`.
+
+### Phase 4: Fleet & Context Features
+- **GPS Telemetry & Adaptive Speed Gating (`backend/context/gps_service.py`):** Parses NMEA `$GPRMC` sentences and REST speed telemetry. Gates Stage 3 emergency siren to moving vehicle ($>5\text{ km/h}$) to prevent nuisance alarms when stationary. Tightens alert thresholds at highway speeds ($>60\text{ km/h}$). Tracks continuous driving trip duration with mandatory break reminders ($>2\text{h}$).
+- **Driver Response Verification (`backend/context/response_check.py`):** Demands physical button press, voice, or UI acknowledgement at Stage 2 within $5.0\text{s}$; escalates directly to Stage 3 if unanswered.
+- **Encrypted Offline-First Fleet Sync (`backend/fleet/fleet_store.py`, `backend/fleet/fleet_sync.py`):** Local SQLite storage with AES/HMAC authenticated encryption. Zero video/face frames stored by default. Synchronizes queued event telemetry over HTTP/MQTT.
+- **Multilingual Indian Alert Catalog (`backend/alert_catalog.py`):** Added native localizations and Piper TTS mappings for Telugu (`te`), Tamil (`ta`), Kannada (`kn`), and Bengali (`bn`) in addition to English, Hindi, and Marathi.
+- **Haptic Actuator Channel:** Integrated tactile vibration motor pulses via GPIO pin 25 for Stage 2 & 3 escalation.
+
+### Phase 5: Dashboard & Explainability
+- **Live Alert Explainability (`frontend/src/components/ExplainabilityChart.jsx`):** Real-time breakdown of EAR trend, rolling PERCLOS, head nod pitch, yawn MAR, and transparent fusion weight allocation.
+- **Grad-CAM Developer Diagnostics (`backend/explainability/gradcam.py`, `frontend/src/components/GradCamView.jsx`):** Computes gradient-weighted class activation heatmaps on `DepthwiseSeparableCNN` to verify eyelid/pupil attention focus.
+- **Trip Report Page (`backend/explainability/trip_summary.py`, `frontend/src/components/TripReport.jsx`):** Post-trip safety summary featuring risk scores (0–100), alert counts, longest closure duration, offline safety recommendations, and HTML/PDF export.
+- **Playwright End-to-End Tests (`frontend/tests/phase5_navigation.spec.ts`):** Verified full navigation and captured verification screenshots in `.agent/screenshots/`.
+
+---
+
+## Evaluation Reproduction Guide
+
+Every metric reported in this project can be verified by running the following commands:
+
+| Benchmark / Evaluation | Command | Output Artifact |
+| :--- | :--- | :--- |
+| **Headline Model Accuracy (Dataset 2)** | `./venv/bin/python backend/evaluate_integration.py` | `reports/phase6_alert_benchmark.json` |
+| **Alert Timing & Latency** | `./venv/bin/pytest tests/test_temporal_logic.py -k test_alert_threshold_latency` | Console test assertion (tolerance $\le 0.05\text{s}$) |
+| **Real Video Clip Validation** | `./venv/bin/python backend/evaluate_video.py --video reports/test_driver_feed.mp4` | `reports/video_eval_report.json` |
+| **Multimodal Augmentation & Splits** | `./venv/bin/python backend/training/train_multimodal.py --demo` | `reports/multimodal_training_report.json` |
+| **ONNX & INT8 Export & Benchmark** | `./venv/bin/python backend/edge/export_onnx_int8.py` | `reports/edge_model_benchmark.json` |
+| **Knowledge Distillation** | `./venv/bin/python backend/training/distillation.py --demo` | `reports/distillation_report.json` |
+| **Complete Unit & Integration Suite (125 tests)** | `./venv/bin/pytest` | Console test report (**123 passed, 2 skipped**) |
+| **Frontend Playwright E2E Suite** | `cd frontend && npx playwright test` | `.agent/screenshots/*.png` |

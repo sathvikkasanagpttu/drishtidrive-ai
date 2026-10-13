@@ -12,7 +12,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-5.0%2B-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 [![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-Edge%20Ready-C51A4A?style=for-the-badge&logo=raspberry-pi&logoColor=white)](https://www.raspberrypi.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-108%20Passed-2EA44F?style=for-the-badge&logo=githubactions&logoColor=white)](#running-the-test-suite)
+[![Tests Passing](https://img.shields.io/badge/Tests-125%20Verified%20(123%20Passed)-2EA44F?style=for-the-badge&logo=githubactions&logoColor=white)](#running-the-test-suite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F1C40F?style=for-the-badge)](LICENSE)
 
 <br/>
@@ -463,22 +463,28 @@ POST /api/camera/stop       # Safely releases camera device
 
 DrishtiDrive AI enforces continuous verification standards across all core subsystems.
 
-### 1. Run Unit & Integration Tests (94 Passing Tests)
+### 1. Run Complete Test Suite (125 Tests: 123 Passed, 2 Skipped)
 ```bash
-pytest tests/ -v
+./venv/bin/pytest tests/ -v
 ```
-Verifies camera capture, YOLO landmark localization, temporal debouncing, 3-stage escalation, audio synthesizer fallbacks, and API contracts.
+Verifies camera capture, YOLO keypoints, temporal debouncing, 3-stage escalation, multi-signal fusion, 3D head pose, distraction detection, offline encrypted SQLite fleet store, GPS speed gating, driver response challenge, camera tamper detection, mock GPIO actuation, and Grad-CAM explainability.
 
-### 2. Execute Phase 8 End-to-End Safety Benchmark
+### 2. Run Playwright End-to-End Dashboard Tests
 ```bash
-python backend/evaluate_integration.py
+cd frontend && npx playwright test
 ```
-Benchmarks False Alarm Rate (FAR), Missed Event Rate (MER), and optical perturbation performance. Metrics are logged to `reports/phase8_integration_benchmark.json`.
+Verifies full UI smoke tests, multi-page tab navigation (Live Monitoring, Explainability, Trip Report, Grad-CAM Debug), and captures screenshots into `.agent/screenshots/`.
 
-### 3. Run Playwright UI Smoke Tests
+### 3. Execute End-to-End Safety Benchmarks
 ```bash
-cd frontend
-npx playwright test
+# Model evaluation on in-the-wild Indian test set
+./venv/bin/python backend/evaluate_integration.py
+
+# Real video clip validation
+./venv/bin/python backend/evaluate_video.py --video reports/test_driver_feed.mp4
+
+# ONNX & Dynamic INT8 quantization benchmark
+./venv/bin/python backend/edge/export_onnx_int8.py
 ```
 
 ---

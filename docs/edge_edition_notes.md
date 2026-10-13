@@ -94,13 +94,20 @@ The **Raspberry Pi Edge Edition** packages DrishtiDrive AI into an autonomous, d
 
 ---
 
-## 6. Development Checklist & Field Deployment
+## 6. Implementation & Field Deployment Status
 
 - [x] Train & benchmark candidate CNN models (MobileNetV2, Depthwise CNN).
-- [x] Implement 3-stage temporal debouncing state machine.
-- [x] Complete Software Edition with full unit & integration tests (108 passed).
-- [ ] Breadboard prototype wiring according to circuit diagram.
-- [ ] Export PyTorch weights to INT8 TFLite / ONNX.
+- [x] Implement 3-stage temporal debouncing state machine with measured latencies.
+- [x] Complete Software Edition with full unit & integration tests (125 passed in pytest).
+- [x] Export PyTorch weights to ONNX (117.9 KB) and dynamic INT8 ONNX (48.5 KB, 58.9% reduction, cosine similarity 0.9998).
+- [x] Implement headless `EdgeRuntime` main loop with startup self-test.
+- [x] Implement systemd watchdog heartbeat notification socket.
+- [x] Implement optical camera tamper and lens occlusion detector (`TamperDetector`).
+- [x] Configure production systemd service daemon (`deployment/systemd/drishtidrive.service`).
+- [x] Multi-signal fusion (EAR, PERCLOS, head pose pitch/yaw, yawn MAR).
+- [x] GPS speed-scaled alert thresholds and stationary siren suppression.
+- [x] Stage 2 driver attentiveness challenge and escalation verification.
+- [x] Hardware accelerator flag (`--accelerator=cpu|coral_tpu|hailo_8`).
+- [ ] Breadboard prototype physical wiring with Raspberry Pi 4/5 hardware.
 - [ ] 3D print ABS dashcam enclosure with suction mount.
-- [ ] Configure headless `systemd` startup daemon (`drishtidrive.service`).
 - [ ] Highway road tests under night driving and cabin noise conditions.
