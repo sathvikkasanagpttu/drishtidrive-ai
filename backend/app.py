@@ -133,9 +133,11 @@ app.add_middleware(
 
 from backend.api_routes import create_api_router
 from backend.calibration_routes import create_calibration_router
+from backend.fleet_routes import router as fleet_router
 
 app.include_router(create_api_router(state))
 app.include_router(create_calibration_router(state.pipeline.calibration_service))
+app.include_router(fleet_router)
 
 
 @app.websocket("/ws/stream")

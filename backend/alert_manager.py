@@ -40,6 +40,9 @@ class AlertManager:
         self,
         config: Optional[AlertConfig] = None,
         audio_backend: Optional[BaseAudioBackend] = None,
+        gps_service: Optional[Any] = None,
+        response_checker: Optional[Any] = None,
+        actuator: Optional[Any] = None,
     ) -> None:
         """Initialize alert manager with configuration and audio backend."""
         self.config = config or AlertConfig()
@@ -47,6 +50,9 @@ class AlertManager:
             use_tts=self.config.use_tts,
             initial_volume=self.config.volume,
         )
+        self.gps_service = gps_service
+        self.response_checker = response_checker
+        self.actuator = actuator
 
         self.current_stage: AlertStage = AlertStage.STAGE_0_NORMAL
         self.language: str = self.config.language
@@ -120,6 +126,10 @@ class AlertManager:
             return False
 
         now = time.time()
+        # Evaluate response verification challenge if configured
+        if self.response_checker is not None:
+            stage = self.response_checker.evaluate(stage, now)
+
         is_escalation = stage.value > self.current_stage.value
         time_since_stage = now - self._last_stage_time.get(stage, -999.0)
 
@@ -189,10 +199,22 @@ class AlertManager:
                 continue
 
             try:
-                # 1. Play attention tone for the stage
-                self.audio_backend.play_tone(task.stage, task.volume)
+                # 1. Trigger haptic vibration pulse if actuator configured
+                if self.actuator is not None and task.stage in (AlertStage.STAGE_2_DROWSY, AlertStage.STAGE_3_CRITICAL):
+                    self.actuator.trigger_haptic(0.5 if task.stage == AlertStage.STAGE_2_DROWSY else 1.0)
 
-                # 2. Speak the standardized voice message
+                # 2. Play attention tone for the stage (gated by vehicle movement for Stage 3 siren)
+                if task.stage == AlertStage.STAGE_3_CRITICAL and self.gps_service is not None:
+                    ctx = self.gps_service.get_context()
+                    if not ctx.siren_allowed:
+                        logger.info("Vehicle stationary; Stage 3 siren suppressed, playing downgraded alert tone.")
+                        self.audio_backend.play_tone(AlertStage.STAGE_2_DROWSY, task.volume * 0.7)
+                    else:
+                        self.audio_backend.play_tone(task.stage, task.volume)
+                else:
+                    self.audio_backend.play_tone(task.stage, task.volume)
+
+                # 3. Speak standardized localized voice message
                 message = AlertMessageCatalog.get_message(task.stage, task.language)
                 self.audio_backend.speak(
                     text=message,
