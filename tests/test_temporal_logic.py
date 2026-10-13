@@ -250,3 +250,56 @@ def test_sequence_validator_on_sustained_closure_sequence() -> None:
     assert report.passed
     assert report.max_alert_stage == 3  # Reached critical alert
     assert report.alert_events_count >= 3
+
+
+def test_alert_latency_within_stated_tolerance_of_thresholds() -> None:
+    """Verify alert latency from eye closure onset matches configured thresholds within stated tolerance.
+
+    Configured thresholds:
+    - Stage 1 (Early Warning): 0.80s
+    - Stage 2 (Drowsiness Warning): 1.80s
+    - Stage 3 (Critical Warning): 3.00s
+    Tolerance: <= 0.05s (within 2 discrete frames at 30 FPS, accounting for debouncing).
+    """
+    config = TemporalConfig(
+        sustained_early_sec=0.8,
+        sustained_drowsy_sec=1.8,
+        sustained_critical_sec=3.0,
+        debounce_window_sec=0.12,
+        alert_cooldown_sec=0.1,  # Short cooldown for latency measurement
+    )
+    detector = TemporalDrowsinessDetector(config)
+
+    # Pre-run with open eyes for 1.0 second
+    t = 0.0
+    dt = 1.0 / 30.0  # 30 FPS
+    for _ in range(30):
+        detector.step("OPEN", True, t)
+        t += dt
+
+    closure_start = t
+    stage_latencies = {}
+
+    for _ in range(120):  # 4.0 seconds of sustained closure
+        status = detector.step("CLOSED", True, t)
+        if status.alert_event is not None:
+            stage_val = status.alert_event.stage.value
+            if stage_val not in stage_latencies:
+                stage_latencies[stage_val] = round(t - closure_start, 3)
+        t += dt
+
+    tolerance = 0.05  # 50 milliseconds tolerance
+    assert 1 in stage_latencies, "Stage 1 alert failed to dispatch."
+    assert 2 in stage_latencies, "Stage 2 alert failed to dispatch."
+    assert 3 in stage_latencies, "Stage 3 alert failed to dispatch."
+
+    assert abs(stage_latencies[1] - config.sustained_early_sec) <= tolerance, (
+        f"Stage 1 latency {stage_latencies[1]}s outside {config.sustained_early_sec}s ± {tolerance}s"
+    )
+    assert abs(stage_latencies[2] - config.sustained_drowsy_sec) <= tolerance, (
+        f"Stage 2 latency {stage_latencies[2]}s outside {config.sustained_drowsy_sec}s ± {tolerance}s"
+    )
+    assert abs(stage_latencies[3] - config.sustained_critical_sec) <= tolerance, (
+        f"Stage 3 latency {stage_latencies[3]}s outside {config.sustained_critical_sec}s ± {tolerance}s"
+    )
+

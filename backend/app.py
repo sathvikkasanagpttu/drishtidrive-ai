@@ -34,6 +34,8 @@ from backend.temporal_state import AlertStage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("drishtidrive.app")
 
+import os
+
 # Global state containers
 class ServerState:
     """Encapsulates pipeline instances, telemetry streams, and event logs."""
@@ -45,20 +47,40 @@ class ServerState:
         self.is_camera_active = False
         self.selected_camera_index = 0
         self.resolution = "1280x720"
+        self.monitoring_start_time: Optional[float] = None
         self.logs: Deque[Dict[str, Any]] = deque(maxlen=200)
         self.active_websockets: Set[WebSocket] = set()
         self.last_frame_base64: Optional[str] = None
         self.last_telemetry: Dict[str, Any] = {
-            "eye_state": "OPEN", "confidence": 0.95, "closure_duration_sec": 0.0,
-            "fps": 30.0, "latency_ms": 3.1, "stage": 0, "status_text": "Normal", "attention_score": 95,
-            "ear": 0.35, "mar": 0.14, "bpm": 18,
-            "voice_message": "Normal monitoring active. Stay attentive.",
-            "audio_status": "Ready", "camera_status": "Ready", "model_name": "MobileNetV2",
+            "eye_state": "NO_DATA",
+            "confidence": None,
+            "closure_duration_sec": 0.0,
+            "fps": 0.0,
+            "latency_ms": None,
+            "stage": 0,
+            "status_text": "Awaiting stream",
+            "attention_score": None,
+            "perclos": None,
+            "ear": None,
+            "ear_is_estimated": True,
+            "mar": None,
+            "bpm": None,
+            "voice_message": "System ready. Start camera to begin monitoring.",
+            "audio_status": "Ready",
+            "camera_status": "Ready",
+            "model_name": self.config.inference.model_name,
+            "fusion_risk": None,
+            "head_pitch": None,
+            "head_yaw": None,
+            "is_nodding": False,
+            "is_looking_away": False,
+            "distraction_type": "NONE",
+            "seatbelt_present": True,
         }
         self.logs.append({
             "timestamp": time.strftime("%H:%M:%S"), "event_type": "SYSTEM_ONLINE", "stage": 0,
             "description": "DrishtiDrive AI Core Initialized",
-            "measurements": "Model: MobileNetV2 (9.36ms)", "severity": "info",
+            "measurements": f"Model: {self.config.inference.model_name}", "severity": "info",
         })
 
 
@@ -71,6 +93,7 @@ async def lifespan(app: FastAPI):
     try:
         state.pipeline.start()
         state.is_camera_active = True
+        state.monitoring_start_time = time.time()
         state.last_telemetry["camera_status"] = "Active"
         logger.info("Continuous driver camera monitoring auto-started successfully.")
     except Exception as exc:
@@ -78,6 +101,7 @@ async def lifespan(app: FastAPI):
     yield
     try:
         state.pipeline.stop()
+        state.monitoring_start_time = None
     except Exception as exc:
         logger.debug("Error stopping pipeline on shutdown: %s", exc)
 
@@ -88,162 +112,30 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+env_cors = os.getenv("CORS_ORIGINS")
+allowed_cors_origins = [o.strip() for o in env_cors.split(",") if o.strip()] if env_cors else default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+from backend.api_routes import create_api_router
+from backend.calibration_routes import create_calibration_router
 
-# Request/Response schemas
-class CameraStartRequest(BaseModel):
-    camera_index: Union[int, str] = 0
-    resolution: Optional[str] = "1280x720"
-
-
-class SettingsUpdateRequest(BaseModel):
-    sensitivity: Optional[float] = None
-    volume: Optional[float] = None
-    language: Optional[str] = None
-
-
-class AlertPreviewRequest(BaseModel):
-    stage: int = 1
-
-
-@app.get("/api/health")
-def get_health() -> Dict[str, Any]:
-    """Health check endpoint."""
-    return {
-        "status": "ok",
-        "project": "DrishtiDrive AI",
-        "tagline": "A Watchful Eye on Every Journey",
-        "camera_active": state.is_camera_active,
-        "model": state.config.inference.model_name,
-    }
-
-
-@app.get("/api/camera/devices")
-def get_camera_devices() -> List[Dict[str, Any]]:
-    """List available video input devices."""
-    return [
-        {"id": 0, "name": "Camera 0 (Default HD Webcam)"},
-        {"id": "test_video", "name": "Demo Video Feed (reports/test_driver_feed.mp4)"},
-    ]
-
-
-@app.post("/api/camera/start")
-def start_camera(req: CameraStartRequest) -> Dict[str, Any]:
-    """Start live camera capture and processing pipeline."""
-    if state.is_camera_active and getattr(state.pipeline, "_is_active", False) and state.selected_camera_index == req.camera_index:
-        return {"status": "already_active", "camera_index": req.camera_index}
-
-    if state.is_camera_active:
-        state.pipeline.stop()
-        state.is_camera_active = False
-
-    state.selected_camera_index = req.camera_index
-    idx_str = str(req.camera_index).lower()
-    if "test" in idx_str or "demo" in idx_str or "file" in idx_str:
-        state.config.camera.video_source = str(Path("reports/test_driver_feed.mp4").resolve())
-    else:
-        try:
-            state.config.camera.camera_index = int(req.camera_index)
-            state.config.camera.video_source = None
-        except ValueError:
-            state.config.camera.video_source = str(Path("reports/test_driver_feed.mp4").resolve())
-
-    state.pipeline.camera = CameraService(state.config.camera)
-    try:
-        state.pipeline.start()
-        state.is_camera_active = True
-        state.last_telemetry["camera_status"] = "Active"
-        state.logs.append({
-            "timestamp": time.strftime("%H:%M:%S"),
-            "event_type": "CAMERA_CONNECTED",
-            "stage": 0,
-            "description": f"Camera {req.camera_index} Connected ({req.resolution})",
-            "measurements": "FPS Target: 30",
-            "severity": "info",
-        })
-        return {"status": "started", "camera_index": req.camera_index}
-    except Exception as exc:
-        logger.warning("Camera open error: %s", exc)
-        return {"status": "error", "error": str(exc)}
-
-
-@app.post("/api/camera/stop")
-def stop_camera() -> Dict[str, Any]:
-    """Stop camera capture and release resources."""
-    state.is_camera_active = False
-    state.pipeline.stop()
-    state.last_telemetry["camera_status"] = "Stopped"
-    state.logs.append({
-        "timestamp": time.strftime("%H:%M:%S"),
-        "event_type": "CAMERA_DISCONNECTED",
-        "stage": 0,
-        "description": "Camera capture stopped by operator",
-        "measurements": "",
-        "severity": "info",
-    })
-    return {"status": "stopped"}
-
-
-@app.get("/api/settings")
-def get_settings() -> Dict[str, Any]:
-    """Retrieve active system parameters."""
-    return {
-        "camera": {"index": state.selected_camera_index, "resolution": state.resolution},
-        "detection": {"sensitivity": 1.0, "single_frame_guard": True},
-        "alerts": {
-            "volume": state.config.alert.volume,
-            "language": state.config.alert.language,
-            "cooldown_sec": state.config.alert.cooldown_sec,
-        },
-    }
-
-
-@app.put("/api/settings")
-def update_settings(req: SettingsUpdateRequest) -> Dict[str, Any]:
-    """Update runtime settings."""
-    if req.volume is not None:
-        state.pipeline.alert_manager.set_volume(req.volume)
-    if req.language is not None:
-        state.pipeline.alert_manager.set_language(req.language)
-    return {"status": "updated"}
-
-
-@app.get("/api/logs")
-def get_logs(limit: int = 50) -> List[Dict[str, Any]]:
-    """Retrieve event history."""
-    all_logs = list(state.logs)
-    return all_logs[-limit:]
-
-
-@app.delete("/api/logs")
-def clear_logs() -> Dict[str, Any]:
-    """Clear event history."""
-    state.logs.clear()
-    return {"status": "cleared"}
-
-
-@app.post("/api/alerts/preview")
-def preview_alert(req: AlertPreviewRequest) -> Dict[str, Any]:
-    """Trigger manual test of audio and visual alert stage."""
-    target_stage = AlertStage(req.stage) if req.stage in (1, 2, 3) else AlertStage.STAGE_1_EARLY
-    state.pipeline.alert_manager.trigger_manual_test(target_stage)
-    voice_msg = AlertMessageCatalog.get_message(target_stage, state.config.alert.language)
-    state.logs.append({
-        "timestamp": time.strftime("%H:%M:%S"),
-        "event_type": "MANUAL_ALERT_TEST",
-        "stage": target_stage.value,
-        "description": f"Manual Audio-Visual Test: Stage {target_stage.value}",
-        "measurements": f'"{voice_msg[:40]}..."',
-        "severity": "warning" if target_stage.value > 1 else "info",
-    })
-    return {"status": "preview_triggered", "stage": target_stage.value}
+app.include_router(create_api_router(state))
+app.include_router(create_calibration_router(state.pipeline.calibration_service))
 
 
 @app.websocket("/ws/stream")
@@ -318,9 +210,17 @@ async def websocket_stream(websocket: WebSocket) -> None:
                     "ear": ear,
                     "mar": round(mar_val, 2),
                     "is_yawning": is_yawn,
-                    "bpm": max(12, min(30, 16 + (blinks % 6))),
+                    "bpm": round(blinks / max(0.2, (time.time() - (state.monitoring_start_time or time.time())) / 60.0), 1),
+                    "blink_count": blinks,
                     "voice_message": AlertMessageCatalog.get_message(AlertStage(stage_val)),
                     "audio_status": "Playing Alert" if stage_val > 0 else "Ready",
+                    "fusion_risk": round(result.fusion.risk_score, 3) if result.fusion else 0.0,
+                    "head_pitch": result.head_pose.pitch if result.head_pose else 0.0,
+                    "head_yaw": result.head_pose.yaw if result.head_pose else 0.0,
+                    "is_nodding": result.head_pose.is_nodding if result.head_pose else False,
+                    "is_looking_away": result.head_pose.is_looking_away if result.head_pose else False,
+                    "distraction_type": result.distraction.active_type.value if result.distraction else "NONE",
+                    "seatbelt_present": result.distraction.seatbelt_present if result.distraction else True,
                 })
 
             packet = {

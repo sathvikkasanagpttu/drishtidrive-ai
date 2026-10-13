@@ -2,8 +2,6 @@
 
 Always apply these standards to all code you write.
 
-For Ralph's Docker Sandboxes naming conventions (per-agent + per-project, used at startup and during cleanup), see @RALPH.md.
-
 ## Reuse Before Creating
 
 Before writing new code, analyze existing utilities, components, hooks, helpers and tests:

@@ -106,3 +106,22 @@ class EyePreprocessor:
 
         if torch.isnan(tensor).any() or torch.isinf(tensor).any():
             raise PreprocessingError("Preprocessed tensor contains NaN or Inf values.")
+
+    @staticmethod
+    def normalize_illumination(frame: np.ndarray) -> np.ndarray:
+        """Apply adaptive histogram equalization (CLAHE) in YCrCb space for low-light conditions."""
+        if frame is None or frame.size == 0:
+            return frame
+        try:
+            if len(frame.shape) == 2:
+                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+                return clahe.apply(frame)
+            ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
+            y, cr, cb = cv2.split(ycrcb)
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            y_eq = clahe.apply(y)
+            merged = cv2.merge([y_eq, cr, cb])
+            return cv2.cvtColor(merged, cv2.COLOR_YCrCb2BGR)
+        except Exception:
+            return frame
+

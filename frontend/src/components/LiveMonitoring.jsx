@@ -209,19 +209,19 @@ export default function LiveMonitoring({
           </span>
           <span className="hud-item">
             <span className="hud-label">Latency:</span>
-            <span className="hud-val green">{typeof telemetry.latency_ms === 'number' ? telemetry.latency_ms.toFixed(1) : '1.9'}ms</span>
+            <span className="hud-val green">{typeof telemetry.latency_ms === 'number' ? `${telemetry.latency_ms.toFixed(1)}ms` : '--'}</span>
           </span>
           <span className="hud-item">
             <span className="hud-label">EAR:</span>
-            <span className="hud-val green">{typeof telemetry.ear === 'number' ? telemetry.ear.toFixed(2) : '0.35'}</span>
+            <span className="hud-val green">{typeof telemetry.ear === 'number' ? telemetry.ear.toFixed(2) : '--'}</span>
           </span>
           <span className="hud-item">
             <span className="hud-label">MAR:</span>
-            <span className="hud-val green">{typeof telemetry.mar === 'number' ? telemetry.mar.toFixed(2) : '0.14'}</span>
+            <span className="hud-val green">{typeof telemetry.mar === 'number' ? telemetry.mar.toFixed(2) : '--'}</span>
           </span>
           <span className="hud-item">
             <span className="hud-label">Attention:</span>
-            <span className="hud-val green">{telemetry.attention_score ?? 95}%</span>
+            <span className="hud-val green">{telemetry.attention_score != null ? `${telemetry.attention_score}%` : '--'}</span>
           </span>
         </div>
 

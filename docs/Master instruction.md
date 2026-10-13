@@ -1,7 +1,7 @@
 # DrishtiDrive AI — Temporal Scoring & Alert Logic
 
 ## 1. Time-Smoothed Drowsiness & Attention Scoring Engine
-- **Engine Module:** [`backend/scoring.py`](file:///e:/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers/backend/scoring.py)
+- **Engine Module:** [`backend/scoring.py`](../backend/scoring.py)
 - **Measurement Inputs:**
   - PERCLOS (% of eye closure over 60-second rolling window)
   - Exponentially smoothed Eye Aspect Ratio (EAR)
@@ -14,7 +14,7 @@
 ---
 
 ## 2. Three-Stage Alert Escalation Logic
-Implemented in [`backend/temporal_machine.py`](file:///e:/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers/backend/temporal_machine.py) and configured in [`backend/config.py`](file:///e:/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers/backend/config.py):
+Implemented in [`backend/temporal_machine.py`](../backend/temporal_machine.py) and configured in [`backend/config.py`](../backend/config.py):
 
 | Alert Stage | Trigger Condition | Spoken Voice Message | Visual Directive |
 | :--- | :--- | :--- | :--- |
@@ -25,5 +25,5 @@ Implemented in [`backend/temporal_machine.py`](file:///e:/Portable-AI-Based-Drow
 ---
 
 ## 3. Verification & Test Coverage
-- Dedicated unit suite: [`tests/test_scoring.py`](file:///e:/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers/tests/test_scoring.py)
+- Dedicated unit suite: [`tests/test_scoring.py`](../tests/test_scoring.py)
 - Full test suite: **94 passed** across all integration, pipeline, audio, and API tests.

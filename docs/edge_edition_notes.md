@@ -98,7 +98,7 @@ The **Raspberry Pi Edge Edition** packages DrishtiDrive AI into an autonomous, d
 
 - [x] Train & benchmark candidate CNN models (MobileNetV2, Depthwise CNN).
 - [x] Implement 3-stage temporal debouncing state machine.
-- [x] Complete Software Edition with full unit & integration tests (94 passed).
+- [x] Complete Software Edition with full unit & integration tests (108 passed).
 - [ ] Breadboard prototype wiring according to circuit diagram.
 - [ ] Export PyTorch weights to INT8 TFLite / ONNX.
 - [ ] 3D print ABS dashcam enclosure with suction mount.

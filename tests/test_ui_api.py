@@ -139,3 +139,57 @@ def test_websocket_telemetry_stream(client: TestClient) -> None:
         assert "status_text" in tel
         assert "voice_message" in tel
         assert "audio_status" in tel
+
+
+def test_telemetry_endpoint_and_cors_protection(client: TestClient) -> None:
+    """Verify /api/telemetry endpoint exists and CORS restricts arbitrary origins."""
+    res = client.get("/api/telemetry")
+    assert res.status_code == 200
+    data = res.json()
+    assert "eye_state" in data
+    assert "closure_duration_sec" in data
+    assert "status_text" in data
+
+    # Verify CORS preflight on allowed localhost origin
+    cors_valid = client.options(
+        "/api/health",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert cors_valid.status_code == 200
+    assert cors_valid.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+    # Verify CORS preflight on unauthorized origin is rejected
+    cors_blocked = client.options(
+        "/api/health",
+        headers={
+            "Origin": "http://malicious-external-site.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert cors_blocked.headers.get("access-control-allow-origin") != "http://malicious-external-site.com"
+
+
+def test_calibration_api_endpoints(client: TestClient) -> None:
+    """Verify driver calibration endpoints (/start, /status, /reset)."""
+    # Start calibration
+    res_start = client.post("/api/calibration/start", json={"driver_id": "test_driver", "duration_sec": 30.0})
+    assert res_start.status_code == 200
+    assert res_start.json()["status"] == "started"
+    assert res_start.json()["state"] == "CALIBRATING"
+
+    # Status check
+    res_status = client.get("/api/calibration/status")
+    assert res_status.status_code == 200
+    assert "progress_percent" in res_status.json()
+    assert res_status.json()["state"] == "CALIBRATING"
+
+    # Reset
+    res_reset = client.post("/api/calibration/reset")
+    assert res_reset.status_code == 200
+    assert res_reset.json()["status"] == "reset"
+    assert res_reset.json()["state"] == "IDLE"
+
+

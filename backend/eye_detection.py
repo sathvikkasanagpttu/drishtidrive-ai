@@ -43,6 +43,8 @@ class EyeDetectionResult:
     right_eye_confidence: float = 0.0
     mar: float = 0.14
     is_yawning: bool = False
+    keypoints_xy: Optional[np.ndarray] = None
+    keypoints_conf: Optional[np.ndarray] = None
     message: str = ""
 
     @property
@@ -68,19 +70,31 @@ class PoseEyeDetector(BaseEyeDetector):
         """Initialize detector with configuration and load pose model."""
         self.config = config or DetectionConfig()
         # pyrefly: ignore [missing-import]
+        from pathlib import Path
         from ultralytics import YOLO
 
-        self.model = YOLO(self.config.pose_weights)
+        weights_path = Path(self.config.pose_weights)
+        if not weights_path.exists():
+            candidate = Path(__file__).resolve().parent / "models" / weights_path.name
+            if candidate.exists():
+                weights_path = candidate
+        self.model = YOLO(str(weights_path))
 
     def detect(self, frame: np.ndarray) -> EyeDetectionResult:
         """Execute pose detection and extract verified eye regions."""
-        # Step 1: Quality check on raw frame
+        working_frame = frame
         quality_status, quality_msg = self._check_frame_quality(frame)
         if quality_status != DetectionStatus.SUCCESS:
-            return EyeDetectionResult(status=quality_status, message=quality_msg)
+            from backend.preprocessing import EyePreprocessor
+            norm_frame = EyePreprocessor.normalize_illumination(frame)
+            norm_status, _ = self._check_frame_quality(norm_frame)
+            if norm_status == DetectionStatus.SUCCESS:
+                working_frame = norm_frame
+            else:
+                return EyeDetectionResult(status=quality_status, message=quality_msg)
 
         # Step 2: YOLO Pose Inference
-        results = self.model.predict(frame, verbose=False)
+        results = self.model.predict(working_frame, verbose=False)
         if not results or len(results) == 0:
             return EyeDetectionResult(
                 status=DetectionStatus.NO_FACE, message="No person or face detected in frame."
@@ -183,6 +197,8 @@ class PoseEyeDetector(BaseEyeDetector):
             right_eye_confidence=round(right_conf, 3),
             mar=mar_val,
             is_yawning=mar_val >= 0.65,
+            keypoints_xy=kpts_xy,
+            keypoints_conf=kpts_conf,
             message="Eyes successfully detected and cropped.",
         )
 

@@ -6,7 +6,7 @@ silent OPEN fallbacks, and enforces the single-frame drowsiness isolation safety
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 import logging
 import time
 from typing import Any, Dict, List, Optional
@@ -15,8 +15,12 @@ import numpy as np
 from backend.alert_manager import AlertManager
 from backend.alert_visual import VisualAlertNotification
 from backend.camera import CameraService
+from backend.calibration import DriverCalibrationService
 from backend.config import PipelineConfig
+from backend.distraction import DistractionDetector, DistractionStatus
 from backend.eye_detection import BaseEyeDetector, DetectionStatus, EyeDetectionResult, PoseEyeDetector
+from backend.fusion import FusionResult, MultiSignalFusion
+from backend.head_pose import HeadPoseEstimator, HeadPoseResult
 from backend.model_inference import EyeClassifier, EyeStatePrediction
 from backend.preprocessing import EyePreprocessor
 from backend.temporal_machine import TemporalDrowsinessDetector
@@ -45,6 +49,9 @@ class PipelineFrameResult:
     temporal_status: Optional[TemporalStatus] = None
     visual_alert: Optional[VisualAlertNotification] = None
     alert_status: Optional[Dict[str, Any]] = None
+    head_pose: Optional[HeadPoseResult] = None
+    distraction: Optional[DistractionStatus] = None
+    fusion: Optional[FusionResult] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert frame result to serializable dictionary."""
@@ -62,6 +69,9 @@ class PipelineFrameResult:
             "temporal_status": self.temporal_status.to_dict() if self.temporal_status else None,
             "visual_alert": self.visual_alert.to_dict() if self.visual_alert else None,
             "alert_status": self.alert_status,
+            "head_pose": asdict(self.head_pose) if self.head_pose else None,
+            "distraction": asdict(self.distraction) if self.distraction else None,
+            "fusion": asdict(self.fusion) if self.fusion else None,
         }
 
 
@@ -86,6 +96,10 @@ class EyeRegionPipeline:
         self.detector = detector or PoseEyeDetector(self.config.detection)
         self.temporal_detector = temporal_detector or TemporalDrowsinessDetector(self.config.temporal)
         self.alert_manager = alert_manager or AlertManager(self.config.alert)
+        self.head_pose_estimator = HeadPoseEstimator()
+        self.distraction_detector = DistractionDetector()
+        self.fusion_engine = MultiSignalFusion()
+        self.calibration_service = DriverCalibrationService()
 
         self.frame_index: int = 0
         self.consecutive_closed_frames: int = 0
@@ -126,6 +140,8 @@ class EyeRegionPipeline:
             temp_status = self.temporal_detector.step("UNCERTAIN", False, now)
             visual_notif = self.alert_manager.handle_temporal_status(temp_status)
             latency["total_ms"] = round((time.perf_counter() - t_start) * 1000.0, 2)
+            deg_pose = HeadPoseResult(method="none")
+            deg_fusion = self.fusion_engine.update("UNCERTAIN", 0.0, 0.14, deg_pose, now)
             return PipelineFrameResult(
                 timestamp=now,
                 frame_index=self.frame_index,
@@ -141,6 +157,9 @@ class EyeRegionPipeline:
                 temporal_status=temp_status,
                 visual_alert=visual_notif,
                 alert_status=self.alert_manager.get_status(),
+                head_pose=deg_pose,
+                distraction=DistractionStatus(message=det_res.message, event_timestamp=now),
+                fusion=deg_fusion,
             )
 
         # 3. Preprocess and Classify Eye Regions
@@ -179,10 +198,25 @@ class EyeRegionPipeline:
         else:
             self.consecutive_closed_frames = 0
 
-        # 6. Apply Temporal State Machine (Phase 5)
-        # Prevents single closed-eye frames from declaring confirmed drowsiness
-        is_obs_valid = (state != "UNCERTAIN")
+        # 6. Multi-Signal Fusion, Head Pose, and Distraction Analysis
+        h, w = frame.shape[:2] if frame is not None and frame.size > 0 else (480, 640)
+        head_pose = self.head_pose_estimator.estimate(
+            det_res.keypoints_xy, det_res.keypoints_conf, (h, w)
+        )
+        distraction = self.distraction_detector.update(
+            head_pose, det_res.keypoints_xy, det_res.keypoints_conf, frame, timestamp=now
+        )
         mar_val = getattr(det_res, "mar", 0.14)
+        closed_prob = conf if state == "CLOSED" else (1.0 - conf if state == "OPEN" else 0.5)
+        fusion = self.fusion_engine.update(state, closed_prob, mar_val, head_pose, timestamp=now)
+        self.calibration_service.update(
+            state, conf, head_pose.pitch, head_pose.yaw, head_pose.roll,
+            is_blink=(state == "CLOSED" and self.consecutive_closed_frames == 1),
+            timestamp=now,
+        )
+
+        # 7. Apply Temporal State Machine (Phase 5) as Final Safety Layer
+        is_obs_valid = (state != "UNCERTAIN")
         ear_val = getattr(det_res, "ear", 0.10 if state == "CLOSED" else 0.28)
         temp_status = self.temporal_detector.step(state, is_obs_valid, now, mar=mar_val, ear=ear_val)
         visual_notif = self.alert_manager.handle_temporal_status(temp_status)
@@ -207,6 +241,9 @@ class EyeRegionPipeline:
             temporal_status=temp_status,
             visual_alert=visual_notif,
             alert_status=self.alert_manager.get_status(),
+            head_pose=head_pose,
+            distraction=distraction,
+            fusion=fusion,
         )
 
     def _combine_eye_states(

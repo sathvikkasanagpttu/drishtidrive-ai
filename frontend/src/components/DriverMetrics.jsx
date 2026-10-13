@@ -3,35 +3,27 @@ import { BarChart2, Eye, EyeOff, Clock, Gauge, Cpu, Activity, Smile } from 'luci
 import './DriverMetrics.css';
 
 export default function DriverMetrics({ telemetry }) {
-  const t = telemetry || {
-    eye_state: 'OPEN',
-    confidence: 0.95,
-    closure_duration_sec: 0.0,
-    latency_ms: 1.93,
-    fps: 30.0,
-    attention_score: 95,
-    ear: 0.32,
-    mar: 0.15,
-    bpm: 18,
-  };
+  const t = telemetry || {};
 
-  const eyeState = t.eye_state || 'OPEN';
-  const confidencePct = Math.round((t.confidence || 0.95) * 100);
+  const eyeState = t.eye_state && t.eye_state !== 'NO_DATA' ? t.eye_state : 'NO DATA';
+  const confidenceText = typeof t.confidence === 'number' ? `${Math.round(t.confidence * 100)}%` : '--';
   const closureSec = typeof t.closure_duration_sec === 'number' ? t.closure_duration_sec.toFixed(2) : '0.00';
-  const latencyMs = typeof t.latency_ms === 'number' ? t.latency_ms.toFixed(2) : '1.93';
-  const fpsVal = typeof t.fps === 'number' ? t.fps.toFixed(1) : '30.0';
-  const earVal = typeof t.ear === 'number' ? t.ear.toFixed(2) : '0.32';
-  const marVal = typeof t.mar === 'number' ? t.mar.toFixed(2) : '0.15';
-  const attentionScore = t.attention_score || 95;
-  const bpm = t.bpm || 18;
+  const latencyMs = typeof t.latency_ms === 'number' ? t.latency_ms.toFixed(2) : '--';
+  const fpsVal = typeof t.fps === 'number' && t.fps > 0 ? t.fps.toFixed(1) : '--';
+  const earVal = typeof t.ear === 'number' ? t.ear.toFixed(2) : '--';
+  const marVal = typeof t.mar === 'number' ? t.mar.toFixed(2) : '--';
+  const attentionScoreText = typeof t.attention_score === 'number' ? `${t.attention_score}%` : '--';
+  const attentionScore = typeof t.attention_score === 'number' ? t.attention_score : 0;
+  const bpmText = typeof t.bpm === 'number' ? `${t.bpm} bpm` : '--';
+  const bpmVal = typeof t.bpm === 'number' ? t.bpm : 0;
 
   // Dynamic status classes
   const eyeStateClass = eyeState === 'OPEN' ? 'state-open' : eyeState === 'CLOSED' ? 'state-closed' : 'state-uncertain';
-  const closureColorClass = t.closure_duration_sec >= 1.8 ? 'red' : t.closure_duration_sec >= 0.8 ? 'amber' : 'green';
+  const closureColorClass = (t.closure_duration_sec || 0) >= 1.8 ? 'red' : (t.closure_duration_sec || 0) >= 0.8 ? 'amber' : 'green';
 
-  const earPercent = Math.min(100, Math.max(0, (Number(earVal) / 0.40) * 100));
-  const marPercent = Math.min(100, Math.max(0, (Number(marVal) / 0.60) * 100));
-  const blinkPercent = Math.min(100, Math.max(0, (bpm / 35) * 100));
+  const earPercent = typeof t.ear === 'number' ? Math.min(100, Math.max(0, (t.ear / 0.40) * 100)) : 0;
+  const marPercent = typeof t.mar === 'number' ? Math.min(100, Math.max(0, (t.mar / 0.60) * 100)) : 0;
+  const blinkPercent = typeof t.bpm === 'number' ? Math.min(100, Math.max(0, (bpmVal / 35) * 100)) : 0;
 
   return (
     <div className="card driver-metrics-card">
@@ -55,7 +47,7 @@ export default function DriverMetrics({ telemetry }) {
               <Eye size={17} className="metric-icon text-emerald-500" />
               <span className="metric-label">Attention Score</span>
             </div>
-            <span className="metric-value green">{attentionScore}%</span>
+            <span className="metric-value green">{attentionScoreText}</span>
           </div>
           <div className="progress-track">
             <div
@@ -74,7 +66,7 @@ export default function DriverMetrics({ telemetry }) {
             </div>
             <div className="metric-val-group">
               <span className={`eye-state-badge ${eyeStateClass}`}>{eyeState}</span>
-              <span className="metric-value blue">{confidencePct}%</span>
+              <span className="metric-value blue">{confidenceText}</span>
             </div>
           </div>
         </div>
@@ -137,7 +129,7 @@ export default function DriverMetrics({ telemetry }) {
               <Activity size={17} className="metric-icon text-purple-500" />
               <span className="metric-label">Blink Rate</span>
             </div>
-            <span className="metric-value purple">{bpm} bpm</span>
+            <span className="metric-value purple">{bpmText}</span>
           </div>
           <div className="progress-track">
             <div

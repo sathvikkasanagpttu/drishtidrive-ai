@@ -1,5 +1,5 @@
 {
-  "dataset_path": "E:\\Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers\\data\\eye_state",
+  "dataset_path": "data/eye_state",
   "total_files": 4000,
   "valid_images": 4000,
   "corrupted_images": [],

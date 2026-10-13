@@ -1,56 +1,59 @@
-# DrishtiDrive AI — Dataset Selection and Preparation Guide
+# External Dataset Acquisition & Multi-Modal Evaluation Guide
 
-**Document:** `dataset_guide.md`  
-**Version:** 1.0  
-**Project:** DrishtiDrive AI — Software Edition  
+DrishtiDrive AI supports evaluation and training across four prominent public driver state benchmarks without bundling large video datasets in the repository.
 
 ---
 
-## 1. Candidate Datasets Review
+## 1. Supported Public Benchmarks
 
-### 1.1 MRL Eye Dataset (Primary Candidate)
-- **Source:** [MRL Eye Dataset — VSB Technical University of Ostrava](https://mrl.cs.vsb.cz/eyedataset)
-- **Description:** Large-scale dataset of eye crops collected from 37 subjects under varied lighting conditions, with and without eyeglasses, and varying camera reflections.
-- **Labels:** Binary `0` (closed) and `1` (open), with metadata encoding subject ID, glasses, light conditions, and reflection.
-- **Filename convention:** `s0001_00001_0_0_0_0_0_01.png`
-  - `s0001`: Subject identifier
-  - 3rd field: Eye state (`0` = closed, `1` = open)
-  - 4th field: Eyeglasses (`0` = none, `1` = glasses present)
-- **License / Terms:** Free for research and non-commercial educational evaluation with attribution.
-- **Suitability:** Primary choice for training CNN eye-state classifiers.
-
-### 1.2 Kaggle Eye State Datasets (Alternative / Supplementary)
-- **Source:** [Kaggle Closed vs Open Eyes Search](https://www.kaggle.com/search?q=closed+eyes+open+eyes+dataset)
-- **Common subsets:** CEW (Closed Eyes in the Wild) dataset, yawning/eye datasets.
-- **Permitted use:** Check individual dataset license (CC BY-NC, CC BY 4.0, or Public Domain).
-- **Caution:** Verify image quality, avoid duplicates, and confirm that labels are verified.
-
-### 1.3 NTHU Drowsy Driver Detection Dataset (Sequence Evaluation)
-- **Source:** [NTHU DDD Dataset](https://cv.cs.nthu.edu.tw/php/callforpaper/datasets/DDD/)
-- **Description:** Video sequence dataset capturing realistic driver fatigue behaviors: blinking, prolonged closures, yawning, nodding, and looking away under varied driving simulation conditions.
-- **Access condition:** Requires academic registration / agreement.
-- **Use case:** Validation of temporal state machine and sequence-level threshold verification.
+| Dataset | Primary Focus | Access & Citation |
+|---|---|---|
+| **NTHU-DDD** | Drowsiness under diverse conditions (normal, glasses, sunglasses, night) | [NTHU Computer Vision Lab](http://cv.cs.nthu.edu.tw/php/callforpaper/category.php?id=4) |
+| **UTA-RLDD** | Real-life drowsiness with natural fatigue progression (60 subjects) | [UTA RLDD GitHub](https://github.com/haberdar/uta-rldd) |
+| **YawDD** | Yawning & mouth aspect ratio under in-vehicle lighting | [University of Ottawa](https://www.site.uottawa.ca/~shervin/yawning/) |
+| **DMD** (Driver Monitoring Dataset) | Distraction (phone, reaching, gazing away) and drowsiness | [DMD Dataset / Vicomtech](https://dmd.vicomtech.org/) |
 
 ---
 
-## 2. Dataset Splitting & Leakage Prevention Strategy
+## 2. Directory Layout Setup
 
-To prevent data leakage and guarantee that models generalize well to new drivers:
-1. **Subject-Independent Splits:** All images originating from the same individual/session must strictly belong to either the training, validation, or test set.
-2. **Target Ratio:**
-   - **Training Set:** 70% of subjects
-   - **Validation Set:** 15% of subjects
-   - **Test Set (Held-Out):** 15% of subjects
-3. **Reproducibility:** Seed fixed at `42`, with a `split_manifest.json` recording every image's assigned partition and subject ID.
+Extract downloaded datasets under the `data/external/` directory following this layout:
+
+```text
+data/external/
+├── nthu_ddd/
+│   ├── subject_01/
+│   │   ├── normal/
+│   │   │   ├── open/
+│   │   │   └── closed/
+│   │   ├── glasses/
+│   │   ├── sunglasses/
+│   │   └── night/
+│   └── subject_02/
+├── uta_rldd/
+│   ├── subject_01/
+│   └── subject_02/
+└── yawdd/
+    ├── female/
+    └── male/
+```
 
 ---
 
-## 3. Preprocessing Specifications
+## 3. Subject-Stratified Training & Evaluation
 
-- **Input dimensions:** 96 × 96 pixels.
-- **Color format:** RGB, normalized to range `[0.0, 1.0]`.
-- **Training-Only Augmentations:**
-  - Random horizontal flip (preserving natural bilateral eye shape).
-  - Subtle brightness & contrast adjustment (±15%).
-  - Rotation limited to ±8 degrees (avoiding unnatural head rolls).
-- **Label Encoding:** `0` = open, `1` = closed.
+To avoid data leakage across train, validation, and test sets, `backend/training/train_multimodal.py` enforces **subject-level partitioning** (subjects in the training set never appear in test or validation sets).
+
+### Running Evaluation
+
+```bash
+python -m backend.training.train_multimodal \
+  --data-dir data/external/nthu_ddd \
+  --report reports/multimodal_training_report.json
+```
+
+### Outputs Generated
+
+- **Per-condition metrics**: Accuracy, Closed-eye Recall, Open-eye Recall, and Macro F1 across conditions (Normal, Glasses, Night, Glare).
+- **Confusion matrices**: Saved in `reports/multimodal_training_report.json`.
+- **Reproducibility**: Run without network access once the dataset folder is placed locally.

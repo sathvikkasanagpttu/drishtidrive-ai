@@ -279,7 +279,10 @@ class TemporalDrowsinessDetector:
     ) -> Tuple[Optional[TemporalAlertEvent], str]:
         """Update closure timers, track repeated closures, and escalate alert stages."""
         self.continuous_open_sec = 0.0
-        self.closure_duration_sec += dt
+        if self.debouncer.active_closure_start is not None and timestamp >= self.debouncer.active_closure_start:
+            self.closure_duration_sec = timestamp - self.debouncer.active_closure_start
+        else:
+            self.closure_duration_sec += dt
 
         target_stage = AlertStage.STAGE_0_NORMAL
         target_state = DrowsinessState.NORMAL

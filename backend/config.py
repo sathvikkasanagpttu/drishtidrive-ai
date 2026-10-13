@@ -28,7 +28,7 @@ class DetectionConfig:
     """Configuration for face and eye region localization."""
 
     detector_type: str = "pose"  # "pose" or "haar"
-    pose_weights: str = "yolo11n-pose.pt"
+    pose_weights: str = "backend/models/yolo11n-pose.pt"
     face_cascade_path: Optional[str] = None
     eye_cascade_path: Optional[str] = None
     min_face_confidence: float = 0.5

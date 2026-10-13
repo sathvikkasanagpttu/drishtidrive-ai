@@ -48,6 +48,7 @@ dataset/
 datasets/
 
 # Heavy / Non-essential Checkpoints (>25MB) & Intermediate training epochs
+/*.pt
 *_checkpoint.pt
 backend/models/*_checkpoint.pt
 backend/models/resnet50*

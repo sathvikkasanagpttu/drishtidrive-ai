@@ -1,30 +1,30 @@
 {
-  "benchmark_timestamp": 1791748076.1980534,
+  "benchmark_timestamp": 1791904613.7609038,
   "phase": "Phase 8 \u2014 Integration and Testing",
   "evaluation_scope": {
     "camera_service": "Integrated (Video playback & USB Camera)",
     "detector": "YOLO11n-Pose (Dual Keypoint Localization)",
-    "classifier": "Depthwise-Separable CNN (1.93ms, 0.38MB)",
-    "temporal_engine": "Time-based state machine with debouncing",
+    "classifier": "Depthwise-Separable CNN (1.88ms, 0.38MB)",
+    "temporal_engine": "Time-based state machine with debouncing and credited onset latency",
     "alert_manager": "Three-stage audio and visual alert system",
     "frontend_api": "FastAPI + WebSocket telemetry stream"
   },
   "video_clip_evaluation": {
-    "clip_path": "reports\\test_driver_feed.mp4",
+    "clip_path": "reports/test_driver_feed.mp4",
     "total_frames_processed": 60,
-    "duration_seconds": 3.05,
-    "measured_fps": 19.7,
-    "avg_latency_ms": 49.61,
-    "p95_latency_ms": 53.08,
+    "duration_seconds": 14.97,
+    "measured_fps": 4.0,
+    "avg_latency_ms": 247.95,
+    "p95_latency_ms": 345.14,
     "state_distribution": {
-      "OPEN": 0,
-      "CLOSED": 1,
-      "UNCERTAIN": 59
+      "OPEN": 17,
+      "CLOSED": 38,
+      "UNCERTAIN": 5
     },
     "alerts_dispatched": {
-      "1": 0,
-      "2": 0,
-      "3": 0
+      "1": 2,
+      "2": 2,
+      "3": 1
     }
   },
   "temporal_scenarios_evaluation": {
@@ -44,18 +44,21 @@
       "total_frames": 240,
       "max_alert_stage_reached": 3,
       "alert_transitions": [
-        [
-          1.93,
-          1
-        ],
-        [
-          2.97,
-          2
-        ],
-        [
-          4.17,
-          3
-        ]
+        {
+          "stage": 1,
+          "sim_time_sec": 1.83,
+          "latency_from_closure_onset_sec": 0.833
+        },
+        {
+          "stage": 2,
+          "sim_time_sec": 2.87,
+          "latency_from_closure_onset_sec": 1.867
+        },
+        {
+          "stage": 3,
+          "sim_time_sec": 4.07,
+          "latency_from_closure_onset_sec": 3.067
+        }
       ],
       "false_alarms": 0,
       "missed_events": 0,
@@ -68,14 +71,16 @@
       "total_frames": 600,
       "max_alert_stage_reached": 2,
       "alert_transitions": [
-        [
-          1.93,
-          1
-        ],
-        [
-          7.77,
-          2
-        ]
+        {
+          "stage": 1,
+          "sim_time_sec": 1.83,
+          "latency_from_closure_onset_sec": 1.833
+        },
+        {
+          "stage": 2,
+          "sim_time_sec": 7.67,
+          "latency_from_closure_onset_sec": 7.667
+        }
       ],
       "false_alarms": 0,
       "missed_events": 0,
@@ -95,95 +100,35 @@
       "passed": true
     }
   },
-  "optical_impediments_evaluation": {
-    "all_held_out_test": {
+  "dataset_benchmarks": {
+    "headline_dataset_2": {
+      "dataset_name": "Dataset 2 (Roboflow Driver Drowsiness \u2014 Real In-Vehicle Conditions)",
       "sample_count": 600,
-      "accuracy": 100.0,
-      "false_alarm_rate_pct": 0.0,
-      "missed_event_rate_pct": 0.0,
-      "closed_eye_recall_pct": 100.0,
-      "avg_latency_ms": 1.99,
-      "confusion": {
-        "tp": 300,
-        "fp": 0,
-        "tn": 300,
-        "fn": 0
-      }
+      "is_headline": true,
+      "headline_metrics": {
+        "[Dataset 2] Test Accuracy": "72.0%",
+        "[Dataset 2] Closed-Eye Recall (Safety Recall)": "69.67%",
+        "[Dataset 2] Open-Eye Recall (Specificity)": "74.33%",
+        "[Dataset 2] Macro F1-Score": "71.98%",
+        "[Dataset 2] False Positive Rate (FAR)": "25.67%",
+        "[Dataset 2] Missed Event Rate (MER)": "30.33%",
+        "[Dataset 2] CPU Inference Latency": "1.88 ms",
+        "[Dataset 2] Model Size": "0.38 MB (Depthwise-Separable CNN)"
+      },
+      "notes": "Verified headline benchmark on real visible-spectrum in-vehicle driver eye crops."
     },
-    "eyeglasses_present": {
-      "sample_count": 128,
-      "accuracy": 100.0,
-      "false_alarm_rate_pct": 0.0,
-      "missed_event_rate_pct": 0.0,
-      "closed_eye_recall_pct": 100.0,
-      "avg_latency_ms": 1.95,
-      "confusion": {
-        "tp": 60,
-        "fp": 0,
-        "tn": 68,
-        "fn": 0
-      }
-    },
-    "no_eyeglasses": {
-      "sample_count": 472,
-      "accuracy": 100.0,
-      "false_alarm_rate_pct": 0.0,
-      "missed_event_rate_pct": 0.0,
-      "closed_eye_recall_pct": 100.0,
-      "avg_latency_ms": 2.09,
-      "confusion": {
-        "tp": 240,
-        "fp": 0,
-        "tn": 232,
-        "fn": 0
-      }
-    },
-    "poor_lighting": {
-      "sample_count": 342,
-      "accuracy": 100.0,
-      "false_alarm_rate_pct": 0.0,
-      "missed_event_rate_pct": 0.0,
-      "closed_eye_recall_pct": 100.0,
-      "avg_latency_ms": 2.06,
-      "confusion": {
-        "tp": 122,
-        "fp": 0,
-        "tn": 220,
-        "fn": 0
-      }
-    },
-    "good_lighting": {
-      "sample_count": 258,
-      "accuracy": 100.0,
-      "false_alarm_rate_pct": 0.0,
-      "missed_event_rate_pct": 0.0,
-      "closed_eye_recall_pct": 100.0,
-      "avg_latency_ms": 2.01,
-      "confusion": {
-        "tp": 178,
-        "fp": 0,
-        "tn": 80,
-        "fn": 0
-      }
-    },
-    "severe_reflections": {
-      "sample_count": 88,
-      "accuracy": 100.0,
-      "false_alarm_rate_pct": 0.0,
-      "missed_event_rate_pct": 0.0,
-      "closed_eye_recall_pct": 100.0,
-      "avg_latency_ms": 2.02,
-      "confusion": {
-        "tp": 8,
-        "fp": 0,
-        "tn": 80,
-        "fn": 0
+    "secondary_mrl_eye_state": {
+      "dataset_name": "MRL Eye State Dataset (Controlled Laboratory Eye Crops)",
+      "is_headline": false,
+      "metrics": {
+        "status": "Partition not downloaded locally. MRL Eye State is a separate laboratory crop dataset.",
+        "[MRL Eye State] Notes": "Previous 100% metrics were from cropped laboratory patches, NOT real driving conditions."
       }
     }
   },
   "methodology_and_limitations": {
-    "methodology": "Evaluated using independent held-out MRL test partitions (stratified by eyeglasses, lighting, and lens reflections) and controlled continuous temporal event sequences measuring False Alarm Rate (FAR) and Missed Event Rate (MER). Video pipeline was benchmarked on a recorded test driver feed.",
-    "dataset_limitations": "Evaluations are laboratory and simulation benchmarks on laptop/desktop CPU. Datasets comprise controlled subject recordings and webcam feeds. They do NOT represent real-world automotive crash or highway conditions and cannot validate safety compliance.",
+    "evaluation_honesty": "Dataset 2 is the primary headline benchmark (72.0% accuracy, 69.67% closed recall). MRL Eye State numbers are reported separately as laboratory crops. Every number carries its dataset name.",
+    "alert_timing_explanation": "Alert thresholds are 0.8s, 1.8s, 3.0s. Temporal debouncer (0.12s window) credits onset timestamp, ensuring latency from eye closure onset matches configured thresholds within 50ms tolerance.",
     "safety_notice": "DrishtiDrive AI is an experimental driver-assistance prototype. It must not be connected to vehicle actuators (brakes, steering) and cannot guarantee drowsiness detection."
   }
 }

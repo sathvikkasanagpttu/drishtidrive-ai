@@ -38,6 +38,11 @@ class EyeStateDebouncer:
         self._active_closure_start = None
         self._last_timestamp = None
 
+    @property
+    def active_closure_start(self) -> Optional[float]:
+        """Return the estimated onset timestamp of the current active closure episode."""
+        return self._active_closure_start
+
     def update(self, raw_state: str, timestamp: float) -> Tuple[str, Optional[float]]:
         """Update filter with raw frame observation and timestamp.
 

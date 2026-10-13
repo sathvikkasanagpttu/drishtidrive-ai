@@ -1,0 +1,80 @@
+{
+  "dataset_path": "data/external/nthu_ddd",
+  "status": "COMPLETED",
+  "total_subjects_stratified": true,
+  "sample_counts": {
+    "train": 32,
+    "val": 8,
+    "test": 8
+  },
+  "per_condition_metrics": {
+    "glare": {
+      "total_samples": 2,
+      "accuracy": 0.5,
+      "closed_recall": 0.0,
+      "open_recall": 1.0,
+      "macro_f1": 0.3333,
+      "confusion_matrix": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    },
+    "night": {
+      "total_samples": 2,
+      "accuracy": 0.5,
+      "closed_recall": 0.0,
+      "open_recall": 1.0,
+      "macro_f1": 0.3333,
+      "confusion_matrix": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    },
+    "normal": {
+      "total_samples": 2,
+      "accuracy": 0.5,
+      "closed_recall": 0.0,
+      "open_recall": 1.0,
+      "macro_f1": 0.3333,
+      "confusion_matrix": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    },
+    "glasses": {
+      "total_samples": 2,
+      "accuracy": 0.5,
+      "closed_recall": 0.0,
+      "open_recall": 1.0,
+      "macro_f1": 0.3333,
+      "confusion_matrix": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    }
+  }
+}

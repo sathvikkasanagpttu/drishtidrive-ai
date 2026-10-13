@@ -58,6 +58,25 @@ ALERT_TITLES: Dict[str, Dict[AlertStage, str]] = {
 }
 
 
+DISTRACTION_MESSAGES: Dict[str, Dict[str, str]] = {
+    "en": {
+        "HEAD_POSE_AWAY": "Focus on the road! Looking away from the road detected.",
+        "PHONE_DISTRACTION": "Put your phone down! Mobile phone use while driving is dangerous.",
+        "NO_SEATBELT": "Please fasten your seatbelt for safety.",
+    },
+    "hi": {
+        "HEAD_POSE_AWAY": "सड़क पर ध्यान दें! सड़क से ध्यान हटने का पता चला है।",
+        "PHONE_DISTRACTION": "कृपया फोन नीचे रखें! गाड़ी चलाते समय फोन का उपयोग खतरनाक है।",
+        "NO_SEATBELT": "कृपया सुरक्षा के लिए अपनी सीटबेल्ट बांधें।",
+    },
+    "mr": {
+        "HEAD_POSE_AWAY": "रस्त्याकडे लक्ष द्या! तुमचे लक्ष रस्त्यावरून विचलित झाले आहे.",
+        "PHONE_DISTRACTION": "कृपया फोन बाजूला ठेवा! वाहन चालवताना फोन वापरणे धोकादायक आहे.",
+        "NO_SEATBELT": "कृपया सुरक्षिततेसाठी सीटबेल्ट लावा.",
+    },
+}
+
+
 class AlertMessageCatalog:
     """Catalog manager for multi-language alert text and voice prompts."""
 
@@ -83,6 +102,16 @@ class AlertMessageCatalog:
         )
 
     @classmethod
+    def get_distraction_message(cls, distraction_type: str, language: str = DEFAULT_LANGUAGE) -> str:
+        """Retrieve localized distraction warning message."""
+        lang = language.lower() if language.lower() in DISTRACTION_MESSAGES else cls.DEFAULT_LANGUAGE
+        return DISTRACTION_MESSAGES[lang].get(
+            distraction_type,
+            DISTRACTION_MESSAGES[cls.DEFAULT_LANGUAGE].get(distraction_type, "Distraction detected. Stay attentive."),
+        )
+
+    @classmethod
     def is_language_supported(cls, language: str) -> bool:
         """Check if requested language code is supported."""
         return language.lower() in cls.SUPPORTED_LANGUAGES
+

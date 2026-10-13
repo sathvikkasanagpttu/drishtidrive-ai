@@ -1,0 +1,29 @@
+{
+  "benchmark_timestamp": 1791904505.6346838,
+  "total_clips_evaluated": 1,
+  "clips": [
+    {
+      "clip_name": "test_driver_feed.mp4",
+      "clip_path": "reports/test_driver_feed.mp4",
+      "frames_processed": 30,
+      "wall_clock_sec": 9.31,
+      "measured_fps": 3.2,
+      "avg_total_latency_ms": 309.48,
+      "p95_total_latency_ms": 475.8,
+      "avg_detection_latency_ms": 165.54,
+      "avg_inference_latency_ms": 139.88,
+      "detection_success_rate_pct": 100.0,
+      "state_distribution": {
+        "OPEN": 9,
+        "CLOSED": 21,
+        "UNCERTAIN": 0
+      },
+      "uncertain_percentage": 0.0,
+      "alerts_dispatched": {
+        "1": 2,
+        "2": 2,
+        "3": 1
+      }
+    }
+  ]
+}

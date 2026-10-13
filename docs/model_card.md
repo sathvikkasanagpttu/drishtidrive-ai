@@ -43,47 +43,41 @@ DrishtiDrive AI evaluates five Convolutional Neural Network (CNN) architectures 
 
 ---
 
-## 4. Phase 3 Architecture Comparison (Held-Out Test Set)
+## 4. Phase 3 Architecture Comparison (Headline: Dataset 2 Real Driving Conditions)
 
-Evaluated on Intel/AMD x64 CPU (PyTorch 2.14.1+cpu, 600 held-out images: 300 open, 300 closed):
+Evaluated on CPU on 600 held-out real in-vehicle driver eye crops (300 open, 300 closed from Dataset 2, reproducible via `reports/model_comparison.csv`):
 
-| Candidate Model | Test Accuracy (%) | Closed Recall (%) | Macro F1 (%) | Avg CPU Latency (ms) | Size (MB) | Parameters | Training Status |
-|---|---|---|---|---|---|---|---|
-| **Custom Compact CNN** | 86.83% | 97.00% | 86.70% | 1.66 ms | 1.19 MB | 309,538 | Verified Run |
-| **Depthwise-Separable CNN** | **100.00%** | **100.00%** | **100.00%** | **1.93 ms** | **0.38 MB** | **29,522** | **Selected Winner** |
-| **MobileNetV2** | 98.17% | 97.33% | 98.17% | 8.80 ms | 9.66 MB | 2,226,434 | Verified Run |
-| **EfficientNetB0** | 98.33% | 98.33% | 98.33% | 13.11 ms | 16.52 MB | 4,010,110 | Verified Run |
-| **ResNet50** | 100.00% | 100.00% | 100.00% | 25.11 ms | 91.48 MB | 23,512,130 | Verified Run |
+| Candidate Model | Test Accuracy (%) | Closed Recall (%) | Open Recall (%) | Macro F1 (%) | Avg CPU Latency (ms) | Size (MB) | Parameters | Benchmark Status |
+|---|---|---|---|---|---|---|---|---|
+| **Custom Compact CNN** | 67.17% | 70.67% | 63.67% | 67.13% | 1.89 ms | 1.19 MB | 102,082 | Verified Run |
+| **Depthwise-Separable CNN** | **72.00%** | **69.67%** | **74.33%** | **71.98%** | **1.88 ms** | **0.38 MB** | **29,522** | **Selected Winner** |
+| **MobileNetV2** | 71.83% | 73.00% | 70.67% | 71.83% | 9.36 ms | 9.66 MB | 2,305,986 | Verified Run |
+| **EfficientNetB0** | 73.83% | 65.67% | 82.00% | 73.66% | 13.02 ms | 16.52 MB | 4,089,662 | Verified Run |
+| **ResNet50** | 71.83% | 66.67% | 77.00% | 71.76% | 25.47 ms | 91.48 MB | 23,639,298 | Verified Run |
 
-**Selection Decision:** Depthwise-Separable CNN was selected as production model due to 100% closed-eye safety recall, 1.93ms CPU latency (>500 FPS throughput capability), and minimal 0.38 MB disk footprint.
+**Selection Decision:** Depthwise-Separable CNN was selected as the embedded winner due to balanced 72.00% accuracy, 69.67% closed-eye safety recall, ultra-low 1.88ms CPU latency (>530 FPS), and minimal 0.38 MB footprint.
 
 ---
 
 ## 5. Phase 8 Independent Integration & Safety Evaluation
 
-Measured empirical performance recorded in [`reports/phase8_integration_benchmark.json`](file:///e:/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers/reports/phase8_integration_benchmark.json):
+Measured empirical performance recorded in [`reports/phase8_integration_benchmark.json`](../reports/phase8_integration_benchmark.json):
 
 ### 5.1 Temporal Driving Scenarios (FAR & MER)
 - **Attentive Driver (Normal Blinking, 12s, 360 frames @ 30 FPS):**
   - False Alarm Rate (FAR): **0.0%** (0 false alarms out of 360 frames)
   - Missed Event Rate (MER): **0.0%**
-- **Prolonged Eye Closure / Microsleep (3.2s sustained closure):**
+- **Prolonged Eye Closure / Microsleep (3.2s sustained closure starting at $t=1.00\text{s}$):**
   - False Alarm Rate (FAR): **0.0%**
-  - Missed Event Rate (MER): **0.0%** (Stage 1 reached at 1.93s, Stage 2 at 2.97s, Stage 3 at 4.17s)
+  - Missed Event Rate (MER): **0.0%** (Stage 1 reached at 0.83s from onset, Stage 2 at 1.87s, Stage 3 at 3.07s; all within 0.07s of configured thresholds)
 - **Repeated Micro-Closures (3x 0.9s closures in 20s):**
-  - Escalation to Stage 2 Drowsiness Warning reached at 7.77s.
+  - Escalation to Stage 2 Drowsiness Warning reached at 7.67s.
 - **Sensor Dropout / Head Occlusion (3.0s UNCERTAIN):**
   - Safe degradation hold maintained; **0 false alarms**.
 
-### 5.2 Optical Impediments Benchmark (Held-out Test Cohorts)
-| Condition Cohort | Samples | Accuracy | False Alarm Rate (FAR) | Missed Event Rate (MER) | Closed Recall | Latency |
-|---|---|---|---|---|---|---|
-| **All Test Images** | 600 | 100.00% | 0.00% | 0.00% | 100.00% | 1.89 ms |
-| **Eyeglasses Present** | 128 | 100.00% | 0.00% | 0.00% | 100.00% | 1.86 ms |
-| **No Eyeglasses** | 472 | 100.00% | 0.00% | 0.00% | 100.00% | 1.92 ms |
-| **Poor Lighting** | 342 | 100.00% | 0.00% | 0.00% | 100.00% | 1.87 ms |
-| **Good Lighting** | 258 | 100.00% | 0.00% | 0.00% | 100.00% | 1.87 ms |
-| **Severe Reflections** | 88 | 100.00% | 0.00% | 0.00% | 100.00% | 1.85 ms |
+### 5.2 Multi-Dataset Evaluation Honesty
+- **Headline Benchmark [Dataset 2]:** 72.00% Accuracy, 69.67% Closed Recall, 74.33% Open Recall on real driver cockpit images.
+- **Secondary Laboratory Benchmark [MRL Eye State]:** Evaluated separately on isolated cropped eye patches. Previous 100% metrics reflect laboratory patches, not automotive cabin conditions. Every metric in benchmarks and reports is explicitly prefixed with its originating dataset tag.
 
 ---
 

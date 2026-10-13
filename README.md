@@ -12,7 +12,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-5.0%2B-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 [![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-Edge%20Ready-C51A4A?style=for-the-badge&logo=raspberry-pi&logoColor=white)](https://www.raspberrypi.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-94%20Passed-2EA44F?style=for-the-badge&logo=githubactions&logoColor=white)](#running-the-test-suite)
+[![Tests Passing](https://img.shields.io/badge/Tests-108%20Passed-2EA44F?style=for-the-badge&logo=githubactions&logoColor=white)](#running-the-test-suite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F1C40F?style=for-the-badge)](LICENSE)
 
 <br/>
@@ -93,7 +93,7 @@ To serve both research/desktop fleet environments and real-world in-cabin embedd
 | **User Interface** | Full React 19 real-time dashboard + WebSocket stream | Headless auto-boot (`systemd`), physical snooze button, optional 0.96" OLED |
 | **Power Supply** | Standard computer USB power / AC adapter | Vehicle 12V/24V cigarette lighter via isolated 5V 3A step-down buck converter |
 | **Network Reliance**| 100% Localhost offline execution (no external internet needed) | 100% Offline edge inference; zero internet required on the highway |
-| **Deployment State**| Fully operational (`python run.py`) with 94 passed tests | Embedded architecture ready (`docs/edge_edition_notes.md`) |
+| **Deployment State**| Fully operational (`python run.py`) with 108 passed tests | Embedded architecture ready (`docs/edge_edition_notes.md`) |
 
 ---
 
@@ -386,8 +386,8 @@ The estimated Bill of Materials (BOM) for fabricating the Edge Edition prototype
 ### 1. Clone & Set Up Environment
 ```bash
 # Clone the repository
-git clone https://github.com/swapnil3104/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers.git
-cd Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers
+git clone https://github.com/sathvikkasanagpttu/drishtidrive-ai.git
+cd drishtidrive-ai
 
 # Create a virtual environment (recommended)
 python -m venv venv
