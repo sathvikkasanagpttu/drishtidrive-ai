@@ -1,0 +1,230 @@
+.explainability-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #eef2f7;
+  padding: 24px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon {
+  width: 22px;
+  height: 22px;
+  color: #1877f2;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.section-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.stage-pill {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.stage-pill.stage-0 { background: #ecfdf5; color: #059669; }
+.stage-pill.stage-1 { background: #fefce8; color: #ca8a04; }
+.stage-pill.stage-2 { background: #fff7ed; color: #ea580c; }
+.stage-pill.stage-3 { background: #fef2f2; color: #dc2626; }
+
+.diagnostic-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid transparent;
+}
+
+.diagnostic-banner.stage-0 {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+.diagnostic-banner.stage-1 {
+  background: #fefce8;
+  border-color: #fef08a;
+  color: #854d0e;
+}
+
+.diagnostic-banner.stage-2 {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.diagnostic-banner.stage-3 {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.diagnostic-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.diagnostic-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.diagnostic-text {
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.signal-gauges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.gauge-box {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.gauge-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.gauge-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-icon {
+  width: 14px;
+  height: 14px;
+  color: #64748b;
+}
+
+.gauge-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.nominal { background: #10b981; }
+.progress-fill.critical { background: #ef4444; }
+
+.gauge-footnote {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.fusion-breakdown-panel {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #eef2f7;
+}
+
+.breakdown-heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.stacked-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffffff;
+  transition: width 0.3s ease;
+}
+
+.segment-eye { background: #3b82f6; }
+.segment-perclos { background: #6366f1; }
+.segment-pose { background: #f59e0b; }
+.segment-yawn { background: #ec4899; }
+
+.legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.color-eye { background: #3b82f6; }
+.color-perclos { background: #6366f1; }
+.color-pose { background: #f59e0b; }
+.color-yawn { background: #ec4899; }

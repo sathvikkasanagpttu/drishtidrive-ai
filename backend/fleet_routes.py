@@ -114,3 +114,19 @@ def get_driver_score(driver_id: str = "driver_default") -> Dict[str, Any]:
 def sync_fleet_events() -> Dict[str, Any]:
     """Trigger synchronization of queued offline events."""
     return fleet_sync.sync_pending()
+
+
+from backend.explainability.trip_summary import TripSummaryEngine
+
+@router.get("/fleet/trip-summary")
+def get_trip_summary(trip_id: Optional[str] = None, driver_id: str = "driver_default") -> Dict[str, Any]:
+    """Compile structured trip safety metrics, risk category, and recommendations."""
+    events = fleet_store.get_trip_events(trip_id=trip_id, limit=200)
+    ctx = gps_service.get_context()
+    return TripSummaryEngine.compile_report(
+        trip_id=trip_id or "trip_active",
+        driver_id=driver_id,
+        events=events,
+        trip_duration_sec=ctx.trip_duration_sec or 3600.0,
+        average_speed_kmh=ctx.speed_kmh or 62.0,
+    )

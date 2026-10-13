@@ -1,0 +1,261 @@
+.trip-report-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #eef2f7;
+  padding: 28px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+.report-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.report-icon {
+  width: 24px;
+  height: 24px;
+  color: #1877f2;
+}
+
+.report-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.report-meta {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.meta-val {
+  font-weight: 600;
+  color: #334155;
+}
+
+.report-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-action:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.btn-action.btn-primary {
+  background: #1877f2;
+  color: #ffffff;
+  border-color: #1877f2;
+}
+
+.btn-action.btn-primary:hover {
+  background: #1565c0;
+}
+
+.action-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.report-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.kpi-icon {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.kpi-sub {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.kpi-subtext {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.kpi-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.kpi-box.risk-low { background: #ecfdf5; border-color: #a7f3d0; }
+.kpi-box.risk-low .kpi-value { color: #047857; }
+.kpi-box.risk-low .kpi-badge { background: #10b981; color: #ffffff; }
+
+.kpi-box.risk-med { background: #fff7ed; border-color: #fed7aa; }
+.kpi-box.risk-med .kpi-value { color: #c2410c; }
+.kpi-box.risk-med .kpi-badge { background: #f97316; color: #ffffff; }
+
+.kpi-box.risk-high { background: #fef2f2; border-color: #fecaca; }
+.kpi-box.risk-high .kpi-value { color: #b91c1c; }
+.kpi-box.risk-high .kpi-badge { background: #ef4444; color: #ffffff; }
+
+.alert-breakdown-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.alert-pill-card {
+  padding: 12px 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+.alert-pill-card .pill-count {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.alert-pill-card .pill-name {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.pill-stg1 { background: #fefce8; border-color: #fef08a; }
+.pill-stg1 .pill-count { color: #a16207; }
+
+.pill-stg2 { background: #fff7ed; border-color: #fed7aa; }
+.pill-stg2 .pill-count { color: #c2410c; }
+
+.pill-stg3 { background: #fef2f2; border-color: #fecaca; }
+.pill-stg3 .pill-count { color: #b91c1c; }
+
+.pill-ack { background: #eff6ff; border-color: #bfdbfe; }
+.pill-ack .pill-count { color: #1d4ed8; }
+
+.recommendations-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.recs-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.recs-icon {
+  width: 18px;
+  height: 18px;
+  color: #1877f2;
+}
+
+.recs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.bullet {
+  color: #1877f2;
+  font-weight: bold;
+}
+
+.disclaimer-note {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+  font-style: italic;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .app-header, .report-actions {
+    display: none !important;
+  }
+  .trip-report-card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}
