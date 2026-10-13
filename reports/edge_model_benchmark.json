@@ -1,0 +1,24 @@
+{
+  "FP32_ONNX": {
+    "format": "ONNX FP32",
+    "model_path": "backend/models/depthwise_cnn.onnx",
+    "size_kb": 117.93,
+    "mean_latency_ms": 1.39,
+    "p95_latency_ms": 1.67,
+    "throughput_fps": 717.9,
+    "projected_rpi4_fps": 129.2,
+    "projected_rpi5_fps": 301.5,
+    "cosine_similarity": 1.0
+  },
+  "INT8_ONNX": {
+    "format": "ONNX INT8 Quantized",
+    "model_path": "backend/models/depthwise_cnn_int8.onnx",
+    "size_kb": 48.46,
+    "mean_latency_ms": 2.65,
+    "p95_latency_ms": 3.81,
+    "throughput_fps": 377.1,
+    "projected_rpi4_fps": 67.9,
+    "projected_rpi5_fps": 158.4,
+    "cosine_similarity": 0.9998
+  }
+}

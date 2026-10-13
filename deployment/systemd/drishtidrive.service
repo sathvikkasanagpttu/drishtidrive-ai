@@ -1,0 +1,22 @@
+[Unit]
+Description=DrishtiDrive AI - Driver Drowsiness and Alert System
+Documentation=https://github.com/Sathvik251205/Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers
+After=multi-user.target sound.target network.target
+
+[Service]
+Type=notify
+WorkingDirectory=/opt/drishtidrive
+ExecStart=/opt/drishtidrive/venv/bin/python -m backend.edge.edge_runner --accelerator=cpu
+Restart=always
+RestartSec=5s
+WatchdogSec=15s
+NotifyAccess=main
+StandardOutput=journal
+StandardError=journal
+Environment="PYTHONUNBUFFERED=1"
+Environment="ENABLE_GPIO=1"
+KillMode=mixed
+TimeoutStopSec=10s
+
+[Install]
+WantedBy=multi-user.target

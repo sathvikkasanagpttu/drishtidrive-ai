@@ -51,6 +51,7 @@ datasets/
 /*.pt
 *_checkpoint.pt
 backend/models/*_checkpoint.pt
+backend/models/*_distilled.pt
 backend/models/resnet50*
 resnet50*
 *.h5

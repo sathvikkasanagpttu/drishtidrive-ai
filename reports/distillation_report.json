@@ -1,0 +1,15 @@
+{
+  "teacher_model": "MobileNetV2",
+  "student_model": "DepthwiseSeparableCNN",
+  "temperature": 3.0,
+  "alpha": 0.65,
+  "teacher_closed_recall": 0.0435,
+  "baseline_student_closed_recall": 1.0,
+  "distilled_student_closed_recall": 0.0,
+  "recall_delta": -1.0,
+  "teacher_macro_f1": 0.3452,
+  "baseline_student_macro_f1": 0.3651,
+  "distilled_student_macro_f1": 0.2982,
+  "f1_delta": -0.0669,
+  "student_latency_ms": 4.45
+}
