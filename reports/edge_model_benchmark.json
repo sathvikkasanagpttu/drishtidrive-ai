@@ -1,4 +1,6 @@
 {
+  "rpi_fps_note": "PROJECTED ESTIMATE: Raspberry Pi 4/5 FPS values are projected scaling estimates based on host CPU cycle ratio, not physical Raspberry Pi silicon measurements.",
+  "is_projected_estimate": true,
   "FP32_ONNX": {
     "format": "ONNX FP32",
     "model_path": "backend/models/depthwise_cnn.onnx",

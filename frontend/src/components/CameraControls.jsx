@@ -1,5 +1,6 @@
 import React from 'react';
 import { Camera, Sliders } from 'lucide-react';
+import CalibrationControl from './CalibrationControl';
 import './CameraControls.css';
 
 export default function CameraControls({
@@ -106,6 +107,9 @@ export default function CameraControls({
           </div>
         </div>
       </div>
+
+      {/* Driver Baseline Calibration */}
+      <CalibrationControl />
 
       {/* Privacy default notice */}
       <div className="privacy-guarantee-strip" role="note">

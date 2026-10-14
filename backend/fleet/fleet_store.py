@@ -18,55 +18,63 @@ import logging
 import os
 import sqlite3
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 logger = logging.getLogger("drishtidrive.fleet.store")
 
 
-class FleetCrypto:
-    """Lightweight authenticated encryption for local at-rest telemetry."""
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-    def __init__(self, key: Optional[bytes] = None):
-        if key is None:
-            raw_key = os.environ.get("DRISHTIDRIVE_ENCRYPTION_KEY", "drishtidrive-default-local-key-2026")
+
+class FleetCrypto:
+    """AES-256-GCM authenticated encryption for local at-rest telemetry."""
+
+    def __init__(self, key: Optional[bytes] = None, key_file: Path = Path(".fleet_key")):
+        if key is not None:
+            self.key = key if len(key) == 32 else hashlib.sha256(key).digest()
+        elif "DRISHTIDRIVE_ENCRYPTION_KEY" in os.environ:
+            raw_key = os.environ["DRISHTIDRIVE_ENCRYPTION_KEY"]
             self.key = hashlib.sha256(raw_key.encode("utf-8")).digest()
         else:
-            self.key = key
+            self.key = self._load_or_generate_key(key_file)
+
+    def _load_or_generate_key(self, key_file: Path) -> bytes:
+        if key_file.exists():
+            k = key_file.read_bytes()
+            if len(k) == 32:
+                return k
+        new_key = os.urandom(32)
+        try:
+            key_file.write_bytes(new_key)
+            os.chmod(key_file, 0o600)
+        except OSError as err:
+            logger.warning("Could not persist encryption key to %s: %s", key_file, err)
+        return new_key
 
     def encrypt(self, plain_text: str) -> str:
-        """Encrypt string payload and append HMAC signature."""
+        """Encrypt string payload with AES-256-GCM using random 96-bit nonce."""
         data_bytes = plain_text.encode("utf-8")
-        # Keystream via repeated SHA-256 blocks
-        keystream = b""
-        counter = 0
-        while len(keystream) < len(data_bytes):
-            keystream += hashlib.sha256(self.key + counter.to_bytes(4, "big")).digest()
-            counter += 1
-
-        ciphertext = bytes([b ^ k for b, k in zip(data_bytes, keystream[:len(data_bytes)])])
-        sig = hmac.new(self.key, ciphertext, hashlib.sha256).digest()
-        packed = sig + ciphertext
+        nonce = os.urandom(12)
+        aesgcm = AESGCM(self.key)
+        ciphertext = aesgcm.encrypt(nonce, data_bytes, None)
+        packed = nonce + ciphertext
         return base64.b64encode(packed).decode("ascii")
 
     def decrypt(self, cipher_b64: str) -> str:
-        """Verify HMAC signature and decrypt string payload."""
+        """Verify authentication tag and decrypt AES-256-GCM ciphertext."""
         packed = base64.b64decode(cipher_b64.encode("ascii"))
-        sig = packed[:32]
-        ciphertext = packed[32:]
-
-        expected_sig = hmac.new(self.key, ciphertext, hashlib.sha256).digest()
-        if not hmac.compare_digest(sig, expected_sig):
-            raise ValueError("Integrity verification failed for stored event record")
-
-        keystream = b""
-        counter = 0
-        while len(keystream) < len(ciphertext):
-            keystream += hashlib.sha256(self.key + counter.to_bytes(4, "big")).digest()
-            counter += 1
-
-        plain = bytes([c ^ k for c, k in zip(ciphertext, keystream[:len(ciphertext)])])
-        return plain.decode("utf-8")
+        if len(packed) < 28:
+            raise ValueError("Invalid ciphertext length for AES-GCM record")
+        nonce = packed[:12]
+        ciphertext = packed[12:]
+        aesgcm = AESGCM(self.key)
+        try:
+            plain_bytes = aesgcm.decrypt(nonce, ciphertext, None)
+            return plain_bytes.decode("utf-8")
+        except Exception as err:
+            raise ValueError("Integrity verification failed for stored event record") from err
 
 
 class FleetStore:

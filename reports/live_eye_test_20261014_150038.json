@@ -1,0 +1,23 @@
+{
+  "session_timestamp": "2026-10-14T15:00:38.474834",
+  "total_frames_collected": 21,
+  "open_phase_frames": 7,
+  "closed_phase_frames": 7,
+  "open_recall_pct": 28.57,
+  "closed_recall_pct": 42.86,
+  "false_alarm_rate_pct": 57.14,
+  "time_to_detect_closure_sec": 0.188,
+  "flicker_rate_per_sec": 10.71,
+  "confusion_matrix": {
+    "ground_truth_open": {
+      "pred_open": 2,
+      "pred_closed": 4,
+      "pred_uncertain": 1
+    },
+    "ground_truth_closed": {
+      "pred_closed": 3,
+      "pred_open": 4,
+      "pred_uncertain": 0
+    }
+  }
+}

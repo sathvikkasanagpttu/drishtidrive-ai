@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file in accordance wi
 
 ---
 
+## [2.1.0] - 2026-10-14
+
+### Added & Enhanced — MediaPipe Landmarks, Guided Calibration & Trustworthy Eye Detection
+- **MediaPipe 3D Eye Landmarks (`backend/landmarks.py`):** Integrated Google MediaPipe Face Landmarker Tasks API (`face_landmarker.task`) with `output_face_blendshapes=True`. Computes precise Soukupová-Čech Eye Aspect Ratio (EAR) from 6 canonical landmarks per eye (left: `[362, 385, 387, 263, 373, 380]`, right: `[33, 160, 158, 133, 153, 144]`) and reads native facial blendshapes `eyeBlinkLeft` and `eyeBlinkRight`. Gracefully falls back to YOLO pose when model asset is missing.
+- **Guided 10-Second Per-Driver Calibration (`backend/calibration.py`, `backend/calibration_routes.py`):** Implemented a 10s guided two-phase calibration (7s normal open gaze, 3s closed eyes). Measures individual `open_ear_baseline` and `closed_ear_baseline`, computing dynamic hysteresis thresholds (`ear_close_threshold = open_baseline * 0.70`, `ear_open_threshold = open_baseline * 0.80`, minimum hold 2–3 frames) to prevent state flickering.
+- **Multi-Modal Eye State Fusion (`backend/eye_state_fusion.py`):** Rewrote state decision logic with strict safety-first hierarchy: physical landmark EAR and blendshape blink scores are primary; CNN softmax prediction is secondary. If landmarks indicate closed eyes, state is CLOSED unless CNN is confidently open and EAR is within 10% of threshold. Strong signal disagreements return `UNCERTAIN` rather than defaulting to OPEN. Increased `InferenceConfig.min_confidence` to $0.65$.
+- **True Eye-Level Dataset Pipelines (`backend/training/prepare_true_eye_dataset.py`, `docs/dataset_guide.md`):** Replaced noisy image-level "drowsy/awake" labels with true ocular ground-truth pipelines supporting MRL Eye Dataset (subject-stratified splits), Closed Eyes in the Wild (CEW), and landmark EAR auto-labeling on driver webcam videos. Standardized anatomical 6-landmark padded bounding boxes across both training and inference.
+- **Interactive Live Validation (`scripts/live_eye_test.py`):** Added automated validation script with on-screen visual overlay testing real webcam ground truth across 3 guided phases (10s open, 5s closed, 10s natural blinking). Computes open-eye recall, closed-eye recall, false alarm rate (FAR), closure detection latency, and flicker rate with structured JSON report generation.
+- **AES-256-GCM Fleet Encryption (`backend/fleet/fleet_store.py`):** Replaced legacy XOR cipher with production-grade AES-256-GCM using unique 12-byte random nonces per payload and local `.fleet_key` storage (gitignored). Added backward-compatibility wrapper `backend/evaluate_video.py`.
+- **Frontend Dashboard Calibration UI (`frontend/src/components/CalibrationControl.jsx`):** Added a dedicated Driver Calibration panel with real-time phase guidance, progress tracking, live measured EAR/blink telemetry, dynamic threshold display, and recalibration/reset controls. Embedded seamlessly into `CameraControls.jsx`.
+- **Verified Zero Regression:** Expanded test suite to **144 passing unit/integration tests** across the entire repository.
+
+---
+
 ## [2.0.2] - 2026-10-14
 
 ### Enhanced

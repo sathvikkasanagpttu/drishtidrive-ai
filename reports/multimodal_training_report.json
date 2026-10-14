@@ -1,4 +1,6 @@
 {
+  "notice": "DEMO / PLACEHOLDER RUN: Trained on miniature synthetic sample partition for CI verification. Follow docs/dataset_guide.md for full NTHU-DDD evaluation.",
+  "is_estimate_or_demo": true,
   "dataset_path": "data/external/nthu_ddd",
   "status": "COMPLETED",
   "total_subjects_stratified": true,

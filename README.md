@@ -6,13 +6,13 @@
 
 <p><strong>A Portable, Offline AI-Powered Driver Drowsiness Detection & Multi-Stage Alert System Engineered for Indian Commercial Fleets and Edge IoT Deployments</strong></p>
 
-[![Release](https://img.shields.io/badge/Release-v2.0.1-blue.svg?style=for-the-badge&logo=github)](https://github.com/sathvikkasanagpttu/drishtidrive-ai/releases)
+[![Release](https://img.shields.io/badge/Release-v2.1.0-blue.svg?style=for-the-badge&logo=github)](https://github.com/sathvikkasanagpttu/drishtidrive-ai/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-Edge%20Ready-C51A4A?style=for-the-badge&logo=raspberry-pi&logoColor=white)](https://www.raspberrypi.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-132%20Verified%20(130%20Passed)-2EA44F?style=for-the-badge&logo=pytest&logoColor=white)](#-verification--testing)
+[![Tests Passing](https://img.shields.io/badge/Tests-146%20Verified%20(144%20Passed)-2EA44F?style=for-the-badge&logo=pytest&logoColor=white)](#-verification--testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F1C40F?style=for-the-badge)](LICENSE)
 
 <br/>
@@ -411,26 +411,29 @@ Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers
 │   ├── app.py               # FastAPI application, WebSocket streaming, static server
 │   ├── audio_backend.py     # Cross-platform host playback (afplay, aplay, winsound)
 │   ├── mock_audio.py        # In-memory mock audio backend for deterministic testing
-│   ├── calibration.py       # 30-60s per-driver baseline calibration engine
+│   ├── calibration.py       # 10s guided per-driver baseline calibration engine
+│   ├── calibration_routes.py # REST API for driver calibration cycles
 │   ├── camera.py            # OpenCV camera capture worker with FPS calculation
 │   ├── config.py            # Centralized dataclass configurations
 │   ├── distraction.py       # Phone usage, looking away (>2s), missing seatbelt detection
 │   ├── evaluate_integration.py # Multi-dataset benchmark runner (Dataset 2 headline)
 │   ├── evaluate_video.py    # Real video clip validation and frame scoring
 │   ├── eye_detection.py     # YOLO11n-pose keypoint localization and eye cropping
+│   ├── eye_state_fusion.py  # Safety-first perception fusion (landmarks primary, CNN secondary)
 │   ├── fusion.py            # Multi-signal fusion, rolling PERCLOS, risk scoring, LSTM
 │   ├── head_pose.py         # 3D head pose estimation (pitch/yaw/roll) via solvePnP
+│   ├── landmarks.py         # MediaPipe 3D Face Landmarker (6 pts/eye EAR & blendshape blinks)
 │   ├── model_inference.py   # PyTorch EyeClassifier with uncertainty thresholding
 │   ├── pipeline.py          # End-to-end EyeRegionPipeline coordinator
 │   └── temporal_machine.py  # Debounced 3-stage temporal escalation state machine
 ├── frontend/
 │   ├── dist/                # Pre-built production dashboard assets
 │   ├── src/                 # React 19 source code
-│   │   ├── components/      # UI components (Monitoring, Explainability, TripReport, GradCAM)
+│   │   ├── components/      # UI components (Monitoring, Calibration, Explainability, GradCAM)
 │   │   ├── hooks/           # useCameraStream WebSocket hook
 │   │   └── utils/           # audioAlert.js in-browser audio player
 │   └── package.json         # Frontend dependencies and scripts
-├── tests/                   # 132 comprehensive tests (130 passing, 2 skipped)
+├── tests/                   # 146 comprehensive tests (144 passing, 2 skipped)
 ├── deployment/              # Systemd unit files and edge deployment configurations
 ├── docs/                    # Architecture diagrams, model cards, edge notes, dataset guides
 ├── reports/                 # Benchmark JSON reports, confusion matrices, test footage

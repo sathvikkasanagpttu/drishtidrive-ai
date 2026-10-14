@@ -29,6 +29,8 @@ playwright-report/
 .env
 .env.*
 !.env.example
+.fleet_key
+*.key
 
 # IDE & OS system files
 .DS_Store
@@ -59,6 +61,7 @@ resnet50*
 *.keras
 *.tflite
 *.onnx
+*.task
 
 # Application runtime logs
 *.log

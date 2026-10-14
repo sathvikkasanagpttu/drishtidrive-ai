@@ -1,5 +1,5 @@
 {
-  "benchmark_timestamp": 1791967980.8072162,
+  "benchmark_timestamp": 1791970793.515392,
   "stages_verified": {
     "stage_1": {
       "name": "Stage 1 — Early Warning",
@@ -36,10 +36,10 @@
     }
   },
   "dispatch_latency_ms": {
-    "stage_1": 0.0165,
-    "stage_2": 0.0438,
-    "stage_3": 0.0306,
-    "average_dispatch_latency_ms": 0.0303,
+    "stage_1": 0.0184,
+    "stage_2": 0.0371,
+    "stage_3": 0.1021,
+    "average_dispatch_latency_ms": 0.0525,
     "is_non_blocking": true
   },
   "localization_verified": {

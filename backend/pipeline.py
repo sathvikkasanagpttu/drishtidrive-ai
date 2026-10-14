@@ -1,15 +1,14 @@
 """Integrated Camera and Eye-Region Pipeline for DrishtiDrive AI.
 
-Coordinates camera capture, face and eye detection, preprocessing, and CNN inference.
-Measures latency and FPS, explicitly handles degraded observations, prevents
-silent OPEN fallbacks, and enforces the single-frame drowsiness isolation safety rule.
+Coordinates camera capture, MediaPipe 3D face landmarks, YOLO pose detection,
+preprocessing, CNN classification, multi-modal sensor fusion, and temporal alerts.
 """
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from backend.alert_manager import AlertManager
@@ -19,8 +18,10 @@ from backend.calibration import DriverCalibrationService
 from backend.config import PipelineConfig
 from backend.distraction import DistractionDetector, DistractionStatus
 from backend.eye_detection import BaseEyeDetector, DetectionStatus, EyeDetectionResult, PoseEyeDetector
+from backend.eye_state_fusion import EyeFusionResult, fuse_eye_states
 from backend.fusion import FusionResult, MultiSignalFusion
 from backend.head_pose import HeadPoseEstimator, HeadPoseResult
+from backend.landmarks import EyeLandmarksResult, MediaPipeFaceLandmarker
 from backend.model_inference import EyeClassifier, EyeStatePrediction
 from backend.preprocessing import EyePreprocessor
 from backend.temporal_machine import TemporalDrowsinessDetector
@@ -52,6 +53,7 @@ class PipelineFrameResult:
     head_pose: Optional[HeadPoseResult] = None
     distraction: Optional[DistractionStatus] = None
     fusion: Optional[FusionResult] = None
+    landmarks_result: Optional[EyeLandmarksResult] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert frame result to serializable dictionary."""
@@ -72,6 +74,13 @@ class PipelineFrameResult:
             "head_pose": asdict(self.head_pose) if self.head_pose else None,
             "distraction": asdict(self.distraction) if self.distraction else None,
             "fusion": asdict(self.fusion) if self.fusion else None,
+            "landmarks": {
+                "detected": True, "left_ear": self.landmarks_result.left_ear,
+                "right_ear": self.landmarks_result.right_ear, "mean_ear": self.landmarks_result.mean_ear,
+                "mean_blink": self.landmarks_result.mean_blink,
+                "left_eye_points": self.landmarks_result.left_eye_points,
+                "right_eye_points": self.landmarks_result.right_eye_points,
+            } if self.landmarks_result and self.landmarks_result.detected else None,
         }
 
 
@@ -87,6 +96,7 @@ class EyeRegionPipeline:
         classifier: Optional[EyeClassifier] = None,
         temporal_detector: Optional[TemporalDrowsinessDetector] = None,
         alert_manager: Optional[AlertManager] = None,
+        landmarker: Optional[MediaPipeFaceLandmarker] = None,
     ) -> None:
         """Initialize pipeline with modular components and shared configuration."""
         self.config = config or PipelineConfig()
@@ -94,6 +104,7 @@ class EyeRegionPipeline:
         self.preprocessor = preprocessor or EyePreprocessor(self.config.preprocessing)
         self.classifier = classifier or EyeClassifier(self.config.inference)
         self.detector = detector or PoseEyeDetector(self.config.detection)
+        self.landmarker = landmarker or MediaPipeFaceLandmarker()
         self.temporal_detector = temporal_detector or TemporalDrowsinessDetector(self.config.temporal)
         self.alert_manager = alert_manager or AlertManager(self.config.alert)
         self.head_pose_estimator = HeadPoseEstimator()
@@ -126,45 +137,40 @@ class EyeRegionPipeline:
         t_start = time.perf_counter()
         now = timestamp if timestamp is not None else time.time()
         self.frame_index += 1
-
         latency: Dict[str, float] = {}
 
-        # 1. Face and Eye Region Detection
+        # 1. Primary: MediaPipe Face Landmarker; Secondary: Pose Eye Detector
         t0 = time.perf_counter()
+        landmark_res = self.landmarker.detect(frame)
         det_res = self.detector.detect(frame)
         latency["detection_ms"] = round((time.perf_counter() - t0) * 1000.0, 2)
 
-        # 2. Handle Degraded Observations Safely (Rules 5, 8)
-        if not det_res.is_valid:
+        # 2. Handle Degraded Observations Safely
+        if not det_res.is_valid and not (landmark_res and landmark_res.detected):
             self.consecutive_closed_frames = 0
             temp_status = self.temporal_detector.step("UNCERTAIN", False, now)
-            visual_notif = self.alert_manager.handle_temporal_status(temp_status)
             latency["total_ms"] = round((time.perf_counter() - t_start) * 1000.0, 2)
             deg_pose = HeadPoseResult(method="none")
-            deg_fusion = self.fusion_engine.update("UNCERTAIN", 0.0, 0.14, deg_pose, now)
             return PipelineFrameResult(
-                timestamp=now,
-                frame_index=self.frame_index,
-                overall_state="UNCERTAIN",
-                overall_confidence=0.0,
-                detection_status=det_res.status,
-                detection_result=det_res,
-                latency_breakdown=latency,
-                camera_fps=self.camera.current_fps,
-                consecutive_closed_frames=0,
-                drowsiness_declared=False,
-                status_message=det_res.message,
-                temporal_status=temp_status,
-                visual_alert=visual_notif,
-                alert_status=self.alert_manager.get_status(),
-                head_pose=deg_pose,
+                timestamp=now, frame_index=self.frame_index, overall_state="UNCERTAIN",
+                overall_confidence=0.0, detection_status=det_res.status, detection_result=det_res,
+                latency_breakdown=latency, camera_fps=self.camera.current_fps,
+                status_message=det_res.message, temporal_status=temp_status,
+                visual_alert=self.alert_manager.handle_temporal_status(temp_status),
+                alert_status=self.alert_manager.get_status(), head_pose=deg_pose,
                 distraction=DistractionStatus(message=det_res.message, event_timestamp=now),
-                fusion=deg_fusion,
+                fusion=self.fusion_engine.update("UNCERTAIN", 0.0, 0.14, deg_pose, now),
+                landmarks_result=landmark_res,
             )
 
-        # 3. Preprocess and Classify Eye Regions
-        crops = [c for c in (det_res.left_eye_crop, det_res.right_eye_crop) if c is not None]
-        crop_roles = [r for r, c in (("left", det_res.left_eye_crop), ("right", det_res.right_eye_crop)) if c is not None]
+        # 3. Preprocess and Classify Eye Regions (prefer landmark-aligned crops if available)
+        l_crop = (landmark_res.left_eye_crop if landmark_res and landmark_res.detected and landmark_res.left_eye_crop is not None
+                  else det_res.left_eye_crop)
+        r_crop = (landmark_res.right_eye_crop if landmark_res and landmark_res.detected and landmark_res.right_eye_crop is not None
+                  else det_res.right_eye_crop)
+
+        crops = [c for c in (l_crop, r_crop) if c is not None]
+        crop_roles = [r for r, c in (("left", l_crop), ("right", r_crop)) if c is not None]
 
         t0 = time.perf_counter()
         batch_tensor = self.preprocessor.preprocess_crops_batch(crops)
@@ -182,35 +188,38 @@ class EyeRegionPipeline:
             elif role == "right":
                 right_pred = pred
 
-        # 4. Synthesize Combined Eye State (Preventing Silent OPEN Fallback)
-        state, conf, msg = self._combine_eye_states(left_pred, right_pred, getattr(det_res, "ear", None))
+        # 4. Multi-Signal Head Pose Estimation
+        h, w = frame.shape[:2] if frame is not None and frame.size > 0 else (480, 640)
+        head_pose = self.head_pose_estimator.estimate(det_res.keypoints_xy, det_res.keypoints_conf, (h, w))
 
-        # 5. Track consecutive closed frames for immediate telemetry
+        # 5. Synthesize Combined Eye State via Decision Fusion Engine
+        state, conf, msg = self._combine_eye_states(
+            left_pred, right_pred, getattr(det_res, "ear", None), landmark_res, head_pose.pitch
+        )
+
         if state == "CLOSED":
             self.consecutive_closed_frames += 1
         else:
             self.consecutive_closed_frames = 0
 
-        # 6. Multi-Signal Fusion, Head Pose, and Distraction Analysis
-        h, w = frame.shape[:2] if frame is not None and frame.size > 0 else (480, 640)
-        head_pose = self.head_pose_estimator.estimate(
-            det_res.keypoints_xy, det_res.keypoints_conf, (h, w)
-        )
+        # 6. Distraction, Multi-Signal Fusion & Calibration Updates
         distraction = self.distraction_detector.update(
             head_pose, det_res.keypoints_xy, det_res.keypoints_conf, frame, timestamp=now
         )
         mar_val = getattr(det_res, "mar", 0.14)
         closed_prob = conf if state == "CLOSED" else (1.0 - conf if state == "OPEN" else 0.5)
         fusion = self.fusion_engine.update(state, closed_prob, mar_val, head_pose, timestamp=now)
+        ear_val = landmark_res.mean_ear if (landmark_res and landmark_res.detected) else getattr(det_res, "ear", 0.28)
+        blink_val = landmark_res.mean_blink if (landmark_res and landmark_res.detected) else 0.0
+
         self.calibration_service.update(
             state, conf, head_pose.pitch, head_pose.yaw, head_pose.roll,
             is_blink=(state == "CLOSED" and self.consecutive_closed_frames == 1),
-            timestamp=now,
+            timestamp=now, mean_ear=ear_val, mean_blink=blink_val,
         )
 
-        # 7. Apply Temporal State Machine (Phase 5) as Final Safety Layer
+        # 7. Apply Temporal State Machine as Final Safety Layer
         is_obs_valid = (state != "UNCERTAIN")
-        ear_val = getattr(det_res, "ear", 0.10 if state == "CLOSED" else 0.28)
         temp_status = self.temporal_detector.step(state, is_obs_valid, now, mar=mar_val, ear=ear_val)
         visual_notif = self.alert_manager.handle_temporal_status(temp_status)
         drowsiness_event = (temp_status.alert_stage.value >= 2)
@@ -237,6 +246,7 @@ class EyeRegionPipeline:
             head_pose=head_pose,
             distraction=distraction,
             fusion=fusion,
+            landmarks_result=landmark_res,
         )
 
     def _combine_eye_states(
@@ -244,44 +254,24 @@ class EyeRegionPipeline:
         left: Optional[EyeStatePrediction],
         right: Optional[EyeStatePrediction],
         measured_ear: Optional[float] = None,
+        landmark_res: Optional[EyeLandmarksResult] = None,
+        head_pitch: float = 0.0,
     ) -> Tuple[str, float, str]:
-        """Fuse dual-eye CNN predictions and physical EAR into a robust driver eye state."""
-        if left is None and right is None:
-            return "UNCERTAIN", 0.0, "No eye predictions available."
-
-        if left is not None and right is not None:
-            if left.state == "CLOSED" and right.state == "CLOSED":
-                return "CLOSED", (left.confidence + right.confidence) / 2.0, "Both eyes closed."
-            if left.state == "OPEN" and right.state == "OPEN":
-                if measured_ear is not None and measured_ear <= 0.13 and max(left.confidence, right.confidence) < 0.85:
-                    return "CLOSED", 0.75, "Both eyes physically closed by aperture."
-                return "OPEN", (left.confidence + right.confidence) / 2.0, "Both eyes open."
-            if (left.state == "CLOSED" and right.state == "OPEN") or (right.state == "CLOSED" and left.state == "OPEN"):
-                if measured_ear is not None:
-                    if measured_ear <= 0.16:
-                        return "CLOSED", 0.75, "Asymmetric closure confirmed by physical EAR."
-                    if measured_ear >= 0.24:
-                        return "OPEN", 0.75, "Asymmetric open confirmed by physical EAR."
-            if left.state == "CLOSED" and left.confidence >= 0.72:
-                return "CLOSED", left.confidence * 0.9, "Left eye confirmed closed."
-            if right.state == "CLOSED" and right.confidence >= 0.72:
-                return "CLOSED", right.confidence * 0.9, "Right eye confirmed closed."
-            if left.state == "UNCERTAIN" and right.state == "UNCERTAIN":
-                if measured_ear is not None and measured_ear <= 0.16:
-                    return "CLOSED", 0.72, "Both eyes physically closed (aperture resolved)."
-                if measured_ear is not None and measured_ear >= 0.22:
-                    return "OPEN", 0.72, "Both eyes physically open (aperture resolved)."
-                return "UNCERTAIN", 0.0, "Both eye predictions below confidence threshold."
-            confident = left if left.state != "UNCERTAIN" else right
-            return confident.state, confident.confidence * 0.85, f"Single eye confirmed {confident.state}."
-
-        single = left if left is not None else right
-        if single.state == "UNCERTAIN" and measured_ear is not None:
-            if measured_ear <= 0.16:
-                return "CLOSED", 0.70, "Monocular physically closed by aperture."
-            if measured_ear >= 0.22:
-                return "OPEN", 0.70, "Monocular physically open by aperture."
-        return single.state, single.confidence, f"Monocular observation: {single.state}."
+        """Delegate dual-eye combination to hierarchical multi-modal fusion engine."""
+        prof = self.calibration_service.profile
+        close_th = prof.ear_close_threshold if prof else 0.20
+        open_th = prof.ear_open_threshold if prof else 0.23
+        lm = landmark_res if landmark_res and landmark_res.detected else None
+        res = fuse_eye_states(
+            left_ear=lm.left_ear if lm else None, right_ear=lm.right_ear if lm else None,
+            mean_ear=lm.mean_ear if lm else measured_ear,
+            blink_left=lm.blink_left if lm else None, blink_right=lm.blink_right if lm else None,
+            mean_blink=lm.mean_blink if lm else None,
+            left_cnn=left, right_cnn=right, head_pitch=head_pitch,
+            ear_close_threshold=close_th, ear_open_threshold=open_th,
+            prev_closed=(self.consecutive_closed_frames > 0),
+        )
+        return res.state, res.confidence, res.reason
 
     def step(self) -> PipelineFrameResult:
         """Fetch next camera frame and process through pipeline."""

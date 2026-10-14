@@ -1,4 +1,6 @@
 {
+  "notice": "DEMO / SYNTHETIC ESTIMATE: Evaluated on small synthetic test set without full MRL training.",
+  "is_estimate_or_demo": true,
   "teacher_model": "MobileNetV2",
   "student_model": "DepthwiseSeparableCNN",
   "temperature": 3.0,
