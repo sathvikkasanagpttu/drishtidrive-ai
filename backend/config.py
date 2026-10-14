@@ -58,7 +58,7 @@ class InferenceConfig:
     model_checkpoint: str = "backend/models/mobilenetv2_best.pt"
     class_names: List[str] = field(default_factory=lambda: ["open", "closed"])
     uncertain_label: str = "UNCERTAIN"
-    min_confidence: float = 0.55
+    min_confidence: float = 0.50
     device: str = "cpu"
 
 

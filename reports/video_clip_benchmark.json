@@ -1,28 +1,28 @@
 {
-  "benchmark_timestamp": 1791904505.6346838,
+  "benchmark_timestamp": 1791968130.191957,
   "total_clips_evaluated": 1,
   "clips": [
     {
       "clip_name": "test_driver_feed.mp4",
       "clip_path": "reports/test_driver_feed.mp4",
-      "frames_processed": 30,
-      "wall_clock_sec": 9.31,
-      "measured_fps": 3.2,
-      "avg_total_latency_ms": 309.48,
-      "p95_total_latency_ms": 475.8,
-      "avg_detection_latency_ms": 165.54,
-      "avg_inference_latency_ms": 139.88,
-      "detection_success_rate_pct": 100.0,
+      "frames_processed": 60,
+      "wall_clock_sec": 8.52,
+      "measured_fps": 7.0,
+      "avg_total_latency_ms": 140.11,
+      "p95_total_latency_ms": 150.67,
+      "avg_detection_latency_ms": 72.25,
+      "avg_inference_latency_ms": 67.92,
+      "detection_success_rate_pct": 96.7,
       "state_distribution": {
-        "OPEN": 9,
-        "CLOSED": 21,
-        "UNCERTAIN": 0
+        "OPEN": 44,
+        "CLOSED": 14,
+        "UNCERTAIN": 2
       },
-      "uncertain_percentage": 0.0,
+      "uncertain_percentage": 3.3,
       "alerts_dispatched": {
-        "1": 2,
-        "2": 2,
-        "3": 1
+        "1": 1,
+        "2": 0,
+        "3": 0
       }
     }
   ]

@@ -163,15 +163,8 @@ class EyeRegionPipeline:
             )
 
         # 3. Preprocess and Classify Eye Regions
-        crops: List[np.ndarray] = []
-        crop_roles: List[str] = []
-
-        if det_res.left_eye_crop is not None:
-            crops.append(det_res.left_eye_crop)
-            crop_roles.append("left")
-        if det_res.right_eye_crop is not None:
-            crops.append(det_res.right_eye_crop)
-            crop_roles.append("right")
+        crops = [c for c in (det_res.left_eye_crop, det_res.right_eye_crop) if c is not None]
+        crop_roles = [r for r, c in (("left", det_res.left_eye_crop), ("right", det_res.right_eye_crop)) if c is not None]
 
         t0 = time.perf_counter()
         batch_tensor = self.preprocessor.preprocess_crops_batch(crops)
@@ -190,7 +183,7 @@ class EyeRegionPipeline:
                 right_pred = pred
 
         # 4. Synthesize Combined Eye State (Preventing Silent OPEN Fallback)
-        state, conf, msg = self._combine_eye_states(left_pred, right_pred)
+        state, conf, msg = self._combine_eye_states(left_pred, right_pred, getattr(det_res, "ear", None))
 
         # 5. Track consecutive closed frames for immediate telemetry
         if state == "CLOSED":
@@ -250,8 +243,9 @@ class EyeRegionPipeline:
         self,
         left: Optional[EyeStatePrediction],
         right: Optional[EyeStatePrediction],
+        measured_ear: Optional[float] = None,
     ) -> Tuple[str, float, str]:
-        """Fuse dual-eye predictions into a robust driver eye state."""
+        """Fuse dual-eye CNN predictions and physical EAR into a robust driver eye state."""
         if left is None and right is None:
             return "UNCERTAIN", 0.0, "No eye predictions available."
 
@@ -259,18 +253,34 @@ class EyeRegionPipeline:
             if left.state == "CLOSED" and right.state == "CLOSED":
                 return "CLOSED", (left.confidence + right.confidence) / 2.0, "Both eyes closed."
             if left.state == "OPEN" and right.state == "OPEN":
+                if measured_ear is not None and measured_ear <= 0.13 and max(left.confidence, right.confidence) < 0.85:
+                    return "CLOSED", 0.75, "Both eyes physically closed by aperture."
                 return "OPEN", (left.confidence + right.confidence) / 2.0, "Both eyes open."
-            # Robust handling of glasses reflection / single eye closure
+            if (left.state == "CLOSED" and right.state == "OPEN") or (right.state == "CLOSED" and left.state == "OPEN"):
+                if measured_ear is not None:
+                    if measured_ear <= 0.16:
+                        return "CLOSED", 0.75, "Asymmetric closure confirmed by physical EAR."
+                    if measured_ear >= 0.24:
+                        return "OPEN", 0.75, "Asymmetric open confirmed by physical EAR."
             if left.state == "CLOSED" and left.confidence >= 0.72:
                 return "CLOSED", left.confidence * 0.9, "Left eye confirmed closed."
             if right.state == "CLOSED" and right.confidence >= 0.72:
                 return "CLOSED", right.confidence * 0.9, "Right eye confirmed closed."
             if left.state == "UNCERTAIN" and right.state == "UNCERTAIN":
+                if measured_ear is not None and measured_ear <= 0.16:
+                    return "CLOSED", 0.72, "Both eyes physically closed (aperture resolved)."
+                if measured_ear is not None and measured_ear >= 0.22:
+                    return "OPEN", 0.72, "Both eyes physically open (aperture resolved)."
                 return "UNCERTAIN", 0.0, "Both eye predictions below confidence threshold."
             confident = left if left.state != "UNCERTAIN" else right
             return confident.state, confident.confidence * 0.85, f"Single eye confirmed {confident.state}."
 
         single = left if left is not None else right
+        if single.state == "UNCERTAIN" and measured_ear is not None:
+            if measured_ear <= 0.16:
+                return "CLOSED", 0.70, "Monocular physically closed by aperture."
+            if measured_ear >= 0.22:
+                return "OPEN", 0.70, "Monocular physically open by aperture."
         return single.state, single.confidence, f"Monocular observation: {single.state}."
 
     def step(self) -> PipelineFrameResult:

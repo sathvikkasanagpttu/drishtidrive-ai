@@ -41,6 +41,7 @@ Thumbs.db
 # Agent & IDE internal session metadata
 .agent/
 .tempmediaStorage/
+scratch/
 
 # Datasets (Keep repo lightweight; see docs/dataset_guide.md for instructions)
 data/

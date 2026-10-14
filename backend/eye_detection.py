@@ -14,6 +14,7 @@ import cv2
 import numpy as np
 
 from backend.config import DetectionConfig
+from backend.face_geometry import compute_crop_mar, extract_crop_rect
 
 
 class DetectionStatus(str, Enum):
@@ -41,6 +42,9 @@ class EyeDetectionResult:
     face_confidence: float = 0.0
     left_eye_confidence: float = 0.0
     right_eye_confidence: float = 0.0
+    ear: Optional[float] = None
+    left_ear: Optional[float] = None
+    right_ear: Optional[float] = None
     mar: float = 0.14
     is_yawning: bool = False
     keypoints_xy: Optional[np.ndarray] = None
@@ -136,7 +140,6 @@ class PoseEyeDetector(BaseEyeDetector):
         kpts_conf = (
             keypoints.conf[primary_idx].cpu().numpy()
             if keypoints.conf is not None
-
             else np.ones(len(kpts_xy))
         )
 
@@ -157,18 +160,28 @@ class PoseEyeDetector(BaseEyeDetector):
             )
 
         # Step 5: Compute crop regions based on inter-ocular distance or face scale
+        face_w = float(primary_box[2] - primary_box[0])
+        nominal_iod = face_w * 0.30
         iod = (
             math.hypot(right_pt[0] - left_pt[0], right_pt[1] - left_pt[1])
             if (left_valid and right_valid)
-            else (primary_box[2] - primary_box[0]) * 0.25
+            else nominal_iod
         )
-        box_size = max(24, int(max(iod * 0.85, 32)))
+        # Guard against keypoint jitter or perspective compression
+        effective_iod = max(nominal_iod * 0.65, min(nominal_iod * 1.35, iod))
+        box_size = max(24, int(effective_iod * 0.62))
 
         h, w = frame.shape[:2]
         left_crop, left_box = self._extract_crop(frame, left_pt, box_size, w, h) if left_valid else (None, None)
         right_crop, right_box = self._extract_crop(frame, right_pt, box_size, w, h) if right_valid else (None, None)
 
-        # Step 6: Localize mouth region and calculate Mouth Aspect Ratio (MAR)
+        # Step 6: Compute physical Eye Aspect Ratio (EAR) from cropped ocular fissures
+        left_ear = self._compute_crop_ear(left_crop) if left_crop is not None else 0.28
+        right_ear = self._compute_crop_ear(right_crop) if right_crop is not None else 0.28
+        valid_ears = [e for c, e in [(left_crop, left_ear), (right_crop, right_ear)] if c is not None]
+        mean_ear = round(float(np.mean(valid_ears)), 3) if valid_ears else 0.28
+
+        # Step 7: Localize mouth region and calculate Mouth Aspect Ratio (MAR)
         mouth_box = None
         mar_val = 0.14
         nose_pt = kpts_xy[0]
@@ -177,12 +190,12 @@ class PoseEyeDetector(BaseEyeDetector):
             nose_dist = max(12.0, float(nose_pt[1] - eye_y))
             mouth_cx = int(nose_pt[0])
             mouth_cy = int(nose_pt[1] + nose_dist * 0.95)
-            mw = max(14, int(iod * 0.40))
+            mw = max(14, int(effective_iod * 0.40))
             mh = max(10, int(nose_dist * 0.55))
-            m_crop, m_box = self._extract_crop_rect(frame, mouth_cx, mouth_cy, mw * 2, mh * 2, w, h)
+            m_crop, m_box = extract_crop_rect(frame, mouth_cx, mouth_cy, mw * 2, mh * 2, w, h)
             if m_crop is not None:
                 mouth_box = m_box
-                mar_val = self._compute_mar(m_crop)
+                mar_val = compute_crop_mar(m_crop)
 
         return EyeDetectionResult(
             status=DetectionStatus.SUCCESS,
@@ -195,6 +208,9 @@ class PoseEyeDetector(BaseEyeDetector):
             face_confidence=round(face_conf, 3),
             left_eye_confidence=round(left_conf, 3),
             right_eye_confidence=round(right_conf, 3),
+            ear=mean_ear,
+            left_ear=left_ear,
+            right_ear=right_ear,
             mar=mar_val,
             is_yawning=mar_val >= 0.65,
             keypoints_xy=kpts_xy,
@@ -202,34 +218,38 @@ class PoseEyeDetector(BaseEyeDetector):
             message="Eyes successfully detected and cropped.",
         )
 
-    def _extract_crop_rect(
-        self, frame: np.ndarray, cx: int, cy: int, bw: int, bh: int, width: int, height: int
-    ) -> Tuple[Optional[np.ndarray], Optional[Tuple[int, int, int, int]]]:
-        """Crop rectangle region with border clamping."""
-        x1, y1 = max(0, cx - bw // 2), max(0, cy - bh // 2)
-        x2, y2 = min(width, cx + bw // 2), min(height, cy + bh // 2)
-        if x2 - x1 < 10 or y2 - y1 < 10:
-            return None, None
-        return frame[y1:y2, x1:x2].copy(), (x1, y1, x2, y2)
-
-    def _compute_mar(self, crop: np.ndarray) -> float:
-        """Estimate mouth openness (MAR) based on inner oral cavity depth."""
+    def _compute_crop_ear(self, crop: Optional[np.ndarray]) -> float:
+        """Estimate physical Eye Aspect Ratio (EAR) from vertical ocular aperture."""
         if crop is None or crop.size == 0:
-            return 0.14
+            return 0.28
         gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if len(crop.shape) == 3 else crop
-        h_c, w_c = gray.shape
-        inner = gray[int(h_c * 0.25) : int(h_c * 0.75), int(w_c * 0.2) : int(w_c * 0.8)]
-        if inner.size == 0:
-            return 0.14
-        mean_val = float(np.mean(gray))
-        if mean_val < 15.0:
-            return 0.14
-        # A true yawning open oral cavity is significantly darker than surrounding lip tissue
-        cavity_threshold = max(20.0, mean_val * 0.40)
-        dark_pixels = np.sum(inner < cavity_threshold)
-        open_ratio = float(dark_pixels) / float(inner.size)
-        mar = 0.14 + float(open_ratio * 0.60)
-        return round(float(np.clip(mar, 0.14, 0.85)), 2)
+        h, w = gray.shape
+        if h < 8 or w < 8:
+            return 0.28
+
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+        eq = clahe.apply(gray)
+        blurred = cv2.GaussianBlur(eq, (3, 3), 0)
+
+        roi = blurred[int(h * 0.20) : int(h * 0.80), int(w * 0.15) : int(w * 0.85)]
+        if roi.size == 0:
+            return 0.28
+
+        grad_y = cv2.Sobel(roi, cv2.CV_32F, 0, 1, ksize=3)
+        vert_profile = np.mean(np.abs(grad_y), axis=1)
+        thresh = float(np.mean(vert_profile)) * 0.90
+        edges = np.where(vert_profile > thresh)[0]
+
+        if len(edges) >= 2:
+            aperture = float(edges[-1] - edges[0])
+        else:
+            _, bin_mask = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+            col_counts = np.sum(bin_mask > 0, axis=0)
+            nz = col_counts[col_counts > 0]
+            aperture = float(np.percentile(nz, 85)) if len(nz) > 0 else 0.0
+
+        raw_ear = aperture / max(1.0, float(w * 0.70))
+        return round(float(np.clip(raw_ear, 0.08, 0.38)), 3)
 
     def _extract_crop(
         self, frame: np.ndarray, pt: np.ndarray, size: int, width: int, height: int
@@ -262,34 +282,14 @@ class PoseEyeDetector(BaseEyeDetector):
         return DetectionStatus.SUCCESS, "Quality OK."
 
 
-class MockEyeDetector(BaseEyeDetector):
-    """Mock eye detector for deterministic unit tests and simulated fault injection."""
+# Re-export mock detector for testing convenience
+from backend.mock_detector import MockEyeDetector
 
-    def __init__(self, canned_result: Optional[EyeDetectionResult] = None) -> None:
-        """Initialize mock detector with optional preset response."""
-        self.canned_result = canned_result
-
-    def set_result(self, result: EyeDetectionResult) -> None:
-        """Update canned result returned by detect()."""
-        self.canned_result = result
-
-    def detect(self, frame: np.ndarray) -> EyeDetectionResult:
-        """Return preset canned result or synthesize a valid dummy result."""
-        if self.canned_result is not None:
-            return self.canned_result
-
-        h, w = frame.shape[:2] if frame is not None and frame.size > 0 else (100, 100)
-        dummy_crop = np.zeros((48, 48, 3), dtype=np.uint8)
-        return EyeDetectionResult(
-            status=DetectionStatus.SUCCESS,
-            face_box=(10, 10, w - 10, h - 10),
-            left_eye_box=(20, 30, 40, 50),
-            right_eye_box=(60, 30, 80, 50),
-            left_eye_crop=dummy_crop.copy(),
-            right_eye_crop=dummy_crop.copy(),
-            face_confidence=0.99,
-            left_eye_confidence=0.98,
-            right_eye_confidence=0.97,
-            message="Mock detection success.",
-        )
+__all__ = [
+    "BaseEyeDetector",
+    "DetectionStatus",
+    "EyeDetectionResult",
+    "MockEyeDetector",
+    "PoseEyeDetector",
+]
 
