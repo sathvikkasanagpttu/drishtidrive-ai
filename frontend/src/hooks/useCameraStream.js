@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { playBrowserAlert } from '../utils/audioAlert';
 
 export function useCameraStream() {
   const [streamData, setStreamData] = useState({
@@ -81,6 +82,7 @@ export function useCameraStream() {
             const stage = data.telemetry?.stage || 0;
             if (stage > 0 && stage !== lastAlertStage) {
               lastAlertStage = stage;
+              playBrowserAlert(stage);
               fetchData();
             } else if (stage === 0) {
               lastAlertStage = 0;
@@ -134,6 +136,7 @@ export function useCameraStream() {
   };
 
   const previewAlert = async (stage) => {
+    playBrowserAlert(stage);
     try {
       await fetch('/api/alerts/preview', {
         method: 'POST',

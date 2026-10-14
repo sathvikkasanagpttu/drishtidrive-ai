@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file in accordance wi
 
 ---
 
+## [2.0.1] - 2026-10-14
+
+### Fixed
+- **Host Audio Playback (`backend/audio_backend.py`):** Replaced non-Windows placeholder sleeps in `play_tone` and `_play_prerecorded_mp3` with real cross-platform playback (`afplay` on macOS, `aplay`/`paplay`/`mpg123`/`ffplay`/`mpv` on Linux / Raspberry Pi, and `winsound`/WMP on Windows). Added clean process termination in `stop()`.
+- **Audio Stream API Endpoints (`backend/api_routes.py`):** Added `GET /api/audio/tone/{stage}` and `GET /api/audio/voice/{stage}` streaming audio/wav and audio/mpeg assets to clients.
+- **In-Browser Audio Player (`frontend/src/utils/audioAlert.js`):** Implemented dual-layer browser sound player with sequential WAV tone followed by MP3 voice, plus Web Audio oscillator synthesis (520Hz, 750Hz dual-beep, 880/1100Hz siren) and Web Speech API fallback. Wired directly to preview buttons and WebSocket stage escalation in `frontend/src/hooks/useCameraStream.js`.
+- **Modular Test Double (`backend/mock_audio.py`):** Extracted `MockAudioBackend` into separate module to maintain strict `<300` lines file organization standards per `AGENTS.md`.
+
+---
+
 ## [2.0.0] - 2026-10-13
 
 ### Phase 1: Fix the Foundation

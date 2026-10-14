@@ -9,7 +9,8 @@ import logging
 from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional, Union
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from backend.alert_catalog import AlertMessageCatalog
@@ -166,5 +167,41 @@ def create_api_router(server_state: Any) -> APIRouter:
             "severity": "warning" if target_stage.value > 1 else "info",
         })
         return {"status": "preview_triggered", "stage": target_stage.value}
+
+    @router.get("/audio/tone/{stage}")
+    def get_audio_tone(stage: int) -> FileResponse:
+        """Stream WAV audio alert tone for the requested stage."""
+        target_stage = AlertStage(stage) if stage in (1, 2, 3) else AlertStage.STAGE_1_EARLY
+        tone_path = None
+        if hasattr(server_state.pipeline.alert_manager, "audio_backend"):
+            backend = server_state.pipeline.alert_manager.audio_backend
+            if hasattr(backend, "tone_paths"):
+                tone_path = backend.tone_paths.get(target_stage)
+        if not tone_path or not Path(tone_path).exists():
+            tone_names = {
+                AlertStage.STAGE_1_EARLY: "stage1_beep.wav",
+                AlertStage.STAGE_2_DROWSY: "stage2_beep.wav",
+                AlertStage.STAGE_3_CRITICAL: "stage3_alarm.wav",
+            }
+            tone_path = Path(__file__).resolve().parent / "assets" / tone_names.get(target_stage, "stage1_beep.wav")
+
+        if tone_path and Path(tone_path).exists():
+            return FileResponse(str(tone_path), media_type="audio/wav")
+        raise HTTPException(status_code=404, detail="Tone file not found")
+
+    @router.get("/audio/voice/{stage}")
+    def get_audio_voice(stage: int) -> FileResponse:
+        """Stream MP3 audio voice message for the requested stage."""
+        target_stage = AlertStage(stage) if stage in (1, 2, 3) else AlertStage.STAGE_1_EARLY
+        mp3_names = {
+            AlertStage.STAGE_1_EARLY: "Stage1_Voice.mp3",
+            AlertStage.STAGE_2_DROWSY: "Stage2_voice.mp3",
+            AlertStage.STAGE_3_CRITICAL: "Stage3_voice.mp3",
+        }
+        assets_dir = Path(__file__).resolve().parent / "assets"
+        mp3_path = assets_dir / mp3_names.get(target_stage, "Stage1_Voice.mp3")
+        if mp3_path.exists():
+            return FileResponse(str(mp3_path), media_type="audio/mpeg")
+        raise HTTPException(status_code=404, detail="Voice file not found")
 
     return router

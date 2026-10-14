@@ -193,3 +193,21 @@ def test_calibration_api_endpoints(client: TestClient) -> None:
     assert res_reset.json()["state"] == "IDLE"
 
 
+def test_audio_tone_and_voice_endpoints(client: TestClient) -> None:
+    """Verify WAV alert tones and MP3 voice messages are served correctly."""
+    # Test WAV tones for stages 1, 2, 3
+    for stage in (1, 2, 3):
+        res_tone = client.get(f"/api/audio/tone/{stage}")
+        assert res_tone.status_code == 200
+        assert "audio/wav" in res_tone.headers["content-type"]
+        assert len(res_tone.content) > 100
+
+    # Test MP3 voice for stages 1, 2, 3
+    for stage in (1, 2, 3):
+        res_voice = client.get(f"/api/audio/voice/{stage}")
+        assert res_voice.status_code == 200
+        assert "audio/mpeg" in res_voice.headers["content-type"]
+        assert len(res_voice.content) > 1000
+
+
+

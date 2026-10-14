@@ -10,6 +10,8 @@ from dataclasses import dataclass
 import logging
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import time
 from typing import Any, Dict, List, Optional, Tuple
@@ -99,7 +101,7 @@ class LocalAudioBackend(BaseAudioBackend):
         if self.use_tts:
             self._init_tts_engine()
 
-        self._wmp = None
+        self._active_proc: Optional[subprocess.Popen] = None
 
     def _init_tts_engine(self) -> None:
         """Safely initialize offline pyttsx3 speech synthesizer."""
@@ -129,15 +131,24 @@ class LocalAudioBackend(BaseAudioBackend):
         self.status.is_playing = True
         self.status.last_played_stage = stage
         self.status.last_played_time = time.time()
+        vol = max(0.01, min(1.0, volume))
 
         try:
-            if sys.platform == "win32":
+            if sys.platform == "darwin":
+                self._active_proc = subprocess.Popen(["afplay", "-v", str(vol), str(tone_path)])
+                self._active_proc.wait(timeout=5.0)
+            elif sys.platform == "win32":
                 import winsound
 
                 winsound.PlaySound(str(tone_path), winsound.SND_FILENAME)
             else:
-                # Platform fallback for non-Windows edge environments
-                time.sleep(0.2)
+                player = shutil.which("paplay") or shutil.which("aplay")
+                if player:
+                    cmd = [player, str(tone_path)] if "paplay" in player else [player, "-q", str(tone_path)]
+                    self._active_proc = subprocess.Popen(cmd)
+                    self._active_proc.wait(timeout=5.0)
+                else:
+                    time.sleep(0.2)
             self.status.is_playing = False
             return True
         except Exception as exc:
@@ -155,8 +166,6 @@ class LocalAudioBackend(BaseAudioBackend):
         self.status.is_playing = True
         self.status.last_played_stage = stage
         self.status.last_played_time = time.time()
-
-        success = False
 
         # Play strictly user-provided voice MP3s from backend/assets
         success = self._play_prerecorded_mp3(stage, volume)
@@ -176,7 +185,7 @@ class LocalAudioBackend(BaseAudioBackend):
         return success
 
     def _play_prerecorded_mp3(self, stage: AlertStage, volume: float = 0.8) -> bool:
-        """Play user-provided voice MP3 file using Windows Media subsystem."""
+        """Play voice MP3 file across macOS, Linux, and Windows platforms."""
         mp3_names = {
             AlertStage.STAGE_1_EARLY: "Stage1_Voice.mp3",
             AlertStage.STAGE_2_DROWSY: "Stage2_voice.mp3",
@@ -191,44 +200,76 @@ class LocalAudioBackend(BaseAudioBackend):
             logger.warning("Target voice MP3 file not found: %s", mp3_path)
             return False
 
-        if sys.platform != "win32":
-            time.sleep(2.0)
-            return True
+        vol = max(0.01, min(1.0, volume))
 
         try:
-            import win32com.client
+            if sys.platform == "darwin":
+                self._active_proc = subprocess.Popen(["afplay", "-v", str(vol), str(mp3_path)])
+                while self._active_proc and self._active_proc.poll() is None:
+                    if not self.status.is_playing:
+                        self._active_proc.terminate()
+                        break
+                    time.sleep(0.05)
+                return True
+            elif sys.platform == "win32":
+                import win32com.client
 
-            wmp = win32com.client.Dispatch("WMPlayer.OCX")
-            wmp.settings.volume = int(max(0.0, min(1.0, volume)) * 100)
-            media = wmp.newMedia(str(mp3_path.resolve()))
-            wmp.currentPlaylist.clear()
-            wmp.currentPlaylist.appendItem(media)
-            wmp.controls.play()
+                wmp = win32com.client.Dispatch("WMPlayer.OCX")
+                wmp.settings.volume = int(vol * 100)
+                media = wmp.newMedia(str(mp3_path.resolve()))
+                wmp.currentPlaylist.clear()
+                wmp.currentPlaylist.appendItem(media)
+                wmp.controls.play()
 
-            dur = getattr(media, "duration", 0.0) or 0.0
-            if dur <= 0.0:
-                dur_map = {
-                    AlertStage.STAGE_1_EARLY: 4.1,
-                    AlertStage.STAGE_2_DROWSY: 6.3,
-                    AlertStage.STAGE_3_CRITICAL: 7.3,
-                }
-                dur = dur_map.get(stage, 4.0)
+                dur = getattr(media, "duration", 0.0) or 0.0
+                if dur <= 0.0:
+                    dur_map = {
+                        AlertStage.STAGE_1_EARLY: 4.1,
+                        AlertStage.STAGE_2_DROWSY: 6.3,
+                        AlertStage.STAGE_3_CRITICAL: 7.3,
+                    }
+                    dur = dur_map.get(stage, 4.0)
 
-            t_start = time.time()
-            while time.time() - t_start < dur:
-                if not self.status.is_playing:
-                    wmp.controls.stop()
-                    break
-                time.sleep(0.05)
-            return True
+                t_start = time.time()
+                while time.time() - t_start < dur:
+                    if not self.status.is_playing:
+                        wmp.controls.stop()
+                        break
+                    time.sleep(0.05)
+                return True
+            else:
+                player = shutil.which("mpg123") or shutil.which("mpv") or shutil.which("ffplay")
+                if player:
+                    if "mpg123" in player:
+                        cmd = [player, "-q", str(mp3_path)]
+                    elif "mpv" in player:
+                        cmd = [player, "--no-video", f"--volume={int(vol*100)}", str(mp3_path)]
+                    else:
+                        cmd = [player, "-nodisp", "-autoexit", "-loglevel", "quiet", str(mp3_path)]
+                    self._active_proc = subprocess.Popen(cmd)
+                    while self._active_proc and self._active_proc.poll() is None:
+                        if not self.status.is_playing:
+                            self._active_proc.terminate()
+                            break
+                        time.sleep(0.05)
+                    return True
+                time.sleep(1.0)
+                return True
         except Exception as exc:
             logger.warning("Voice MP3 playback failed: %s", exc)
-            self.status.device_available = False
-            self.status.error_message = f"Audio device/player error: {exc}"
+            self.status.error_message = f"Audio playback error: {exc}"
             return False
 
     def stop(self) -> None:
-        """Stop active audio output."""
+        """Stop active audio output immediately."""
+        self.status.is_playing = False
+        if self._active_proc and self._active_proc.poll() is None:
+            try:
+                self._active_proc.terminate()
+            except Exception:
+                pass
+            self._active_proc = None
+
         if sys.platform == "win32":
             try:
                 import winsound
@@ -241,62 +282,18 @@ class LocalAudioBackend(BaseAudioBackend):
                 self._tts_engine.stop()
             except Exception:
                 pass
-        self.status.is_playing = False
 
     def get_status(self) -> AudioBackendStatus:
         """Return snapshot of current audio status."""
         return self.status
 
 
-class MockAudioBackend(BaseAudioBackend):
-    """Deterministic in-memory audio mock for unit and integration testing."""
+# Re-export mock backend for testing convenience
+from backend.mock_audio import MockAudioBackend
 
-    def __init__(self, simulate_device_failure: bool = False) -> None:
-        """Initialize mock backend with telemetry tracking."""
-        self.simulate_device_failure = simulate_device_failure
-        self.status = AudioBackendStatus(
-            device_available=not simulate_device_failure,
-            engine_type="mock",
-        )
-        self.played_tones: List[Tuple[AlertStage, float]] = []
-        self.spoken_messages: List[Tuple[str, AlertStage, str]] = []
-        self.stop_calls: int = 0
-
-    def reset(self) -> None:
-        """Clear recorded tones, messages, and calls."""
-        self.played_tones.clear()
-        self.spoken_messages.clear()
-        self.stop_calls = 0
-
-    def play_tone(self, stage: AlertStage, volume: float) -> bool:
-        """Record played tone in mock history."""
-        if not self.status.device_available:
-            return False
-        self.played_tones.append((stage, volume))
-        self.status.last_played_stage = stage
-        self.status.last_played_time = time.time()
-        return True
-
-    def speak(
-        self,
-        text: str,
-        stage: AlertStage,
-        language: str = "en",
-        volume: float = 0.8,
-    ) -> bool:
-        """Record spoken message in mock history."""
-        if not self.status.device_available:
-            return False
-        self.spoken_messages.append((text, stage, language))
-        self.status.last_played_stage = stage
-        self.status.last_played_time = time.time()
-        return True
-
-    def stop(self) -> None:
-        """Record stop call."""
-        self.stop_calls += 1
-        self.status.is_playing = False
-
-    def get_status(self) -> AudioBackendStatus:
-        """Return mock audio status."""
-        return self.status
+__all__ = [
+    "AudioBackendStatus",
+    "BaseAudioBackend",
+    "LocalAudioBackend",
+    "MockAudioBackend",
+]
