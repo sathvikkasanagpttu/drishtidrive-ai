@@ -2,386 +2,278 @@
 
 <div align="center">
 
-<h3><em>A Watchful Eye on Every Journey.</em></h3>
+<h3><em>A Watchful Eye on Every Journey</em></h3>
 
-<p><strong>A Portable, Retrofit AI-Powered Driver Drowsiness Detection & Multi-Stage Alert System for Indian Commercial Vehicles and Long-Haul Fleet Operators</strong></p>
+<p><strong>A Portable, Offline AI-Powered Driver Drowsiness Detection & Multi-Stage Alert System Engineered for Indian Commercial Fleets and Edge IoT Deployments</strong></p>
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React 19](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Release](https://img.shields.io/badge/Release-v2.0.1-blue.svg?style=for-the-badge&logo=github)](https://github.com/sathvikkasanagpttu/drishtidrive-ai/releases)
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-5.0%2B-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 [![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-Edge%20Ready-C51A4A?style=for-the-badge&logo=raspberry-pi&logoColor=white)](https://www.raspberrypi.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-125%20Verified%20(123%20Passed)-2EA44F?style=for-the-badge&logo=githubactions&logoColor=white)](#running-the-test-suite)
+[![Tests Passing](https://img.shields.io/badge/Tests-132%20Verified%20(130%20Passed)-2EA44F?style=for-the-badge&logo=pytest&logoColor=white)](#-verification--testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F1C40F?style=for-the-badge)](LICENSE)
 
 <br/>
 
-<a href="#-project-gallery--visual-telemetry"><strong>Explore Visual Gallery</strong></a> •
-<a href="#-two-editions-software-vs-edge"><strong>Two Editions</strong></a> •
+<a href="#-key-features"><strong>Key Features</strong></a> •
+<a href="#-system-architecture"><strong>Architecture</strong></a> •
+<a href="#-empirical-benchmarks--evaluation-honesty"><strong>Benchmarks</strong></a> •
 <a href="#-three-stage-escalating-alert-system"><strong>3-Stage Alerts</strong></a> •
-<a href="#-ai-model-benchmark--evaluation"><strong>AI Benchmarks</strong></a> •
 <a href="#-quickstart--installation"><strong>Quickstart</strong></a> •
-<a href="#-edge-hardware-specification"><strong>Edge Hardware</strong></a>
+<a href="#-edge-hardware-specification"><strong>Edge Hardware</strong></a> •
+<a href="#-api-reference--telemetry"><strong>API Docs</strong></a>
 
 </div>
 
 ---
 
-## 📌 Table of Contents
+## 📌 Executive Summary
 
-- [The Challenge: Indian Road Transport & Driver Fatigue](#-the-challenge-indian-road-transport--driver-fatigue)
-- [Mission & Key Objectives](#-mission--key-objectives)
-- [Two Editions: Software vs. Edge](#-two-editions-software-vs-edge)
-- [Project Gallery & Visual Telemetry](#-project-gallery--visual-telemetry)
-- [Three-Stage Escalating Alert System](#-three-stage-escalating-alert-system)
-- [End-to-End System Architecture](#-end-to-end-system-architecture)
-- [AI Model Benchmark & Evaluation](#-ai-model-benchmark--evaluation)
-- [Next Phase: Embedded Hardware Prototype & Further Development](#-next-phase-embedded-hardware-prototype--further-development)
-- [Raspberry Pi Edge Hardware Specification & Circuit Diagram](#-raspberry-pi-edge-hardware-specification--circuit-diagram)
-- [Quickstart & Installation](#-quickstart--installation)
-- [Interactive Dashboard & API Telemetry](#-interactive-dashboard--api-telemetry)
-- [Running the Test Suite](#-running-the-test-suite)
-- [Safety Notice & Limitations](#-safety-notice--limitations)
-- [License & Acknowledgments](#-license--acknowledgments)
+**DrishtiDrive AI** is a production-grade, privacy-first computer-vision safety device designed to eliminate drowsiness-related accidents across Indian national and state highways. Over **70% of India's domestic freight** moves via long-haul commercial trucks (M/HCVs). Drivers routinely face grueling 12–16 hour shifts, midnight-to-dawn runs (11:00 PM – 5:00 AM), severe sleep deprivation, and extreme cabin conditions.
+
+Commercial factory-fitted ADAS systems require deep Controller Area Network (CAN bus) integration and cost upwards of ₹1,50,000—making them inaccessible to single-vehicle owner-operators. **DrishtiDrive AI** bridges this critical safety gap with an **autonomous retrofit solution costing < ₹6,000 (< 5% of commercial ADAS)** that:
+- **Operates 100% Offline:** Zero cloud dependency; performs continuous on-device inference on unpaved or remote highways with no mobile signal.
+- **Requires Zero Vehicle Modification:** Powered entirely via a standard 12V/24V cigarette-lighter port or auxiliary USB socket.
+- **Fuses Multi-Signal Biometrics:** Combines Eye Aspect Ratio (EAR), Mouth Aspect Ratio (MAR yawn detection), rolling PERCLOS, blink rate, 3D head pose (pitch/yaw/roll), and distraction tracking.
+- **Prevents Alert Fatigue:** Rejects irritating binary alarms in favor of an intelligent 3-stage escalating state machine with driver response verification.
 
 ---
 
-## 🚛 The Challenge: Indian Road Transport & Driver Fatigue
+## 🚀 Key Features
 
-India's logistical backbone is powered by medium and heavy commercial vehicles (M/HCVs). Over **70% of domestic freight** moves across national highways through millions of long-haul trucks.
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                               DRISHTIDRIVE AI CAPABILITIES                             │
+├──────────────────────────┬──────────────────────────┬──────────────────────────────────┤
+│ 👁️ Multi-Signal Fusion   │ 🚨 3-Stage Smart Alerts  │ 🍓 Edge Ready (Raspberry Pi)     │
+│ • Eye Closure & EAR      │ • Stage 1: Gentle Beep   │ • INT8 Quantized ONNX (48.5 KB)  │
+│ • PERCLOS (30s window)   │ • Stage 2: Repeating Tone│ • Systemd watchdog integration   │
+│ • MAR Yawn Tracking      │ • Stage 3: Piercing Siren│ • GPIO buzzer / LEDs / haptic    │
+│ • 3D Head Nod & Droop    │ • Multilingual Audio     │ • Camera tamper & lens detection │
+├──────────────────────────┼──────────────────────────┼──────────────────────────────────┤
+│ 🎯 Distraction Tracking  │ ⚡ Driver Verification   │ 📊 Explainable Web Dashboard     │
+│ • Phone usage detection  │ • 30-60s per-driver calib│ • React 19 dark-mode telemetry   │
+│ • Looking away (> 2.0s)  │ • Stage 2 response button│ • Live multi-metric trends chart │
+│ • Missing seatbelt alert │ • GPS speed siren gating │ • Grad-CAM convolutional debug   │
+│ • Automatic event logs   │ • Mandatory break alarms │ • PDF/HTML trip report exporter  │
+└──────────────────────────┴──────────────────────────┴──────────────────────────────────┘
+```
 
-### The Ground Reality:
-1. **Ageing Fleet Infrastructure:** A vast majority of commercial trucks on Indian roads are legacy vehicles lacking modern electronic control units (ECUs), Controller Area Networks (CAN bus), or factory-fitted Advanced Driver Assistance Systems (ADAS).
-2. **Economic Constraints for Small Fleets:** Most trucks are operated by single-vehicle owner-drivers or small fleet operators. Upgrading to a new truck or retrofitting expensive proprietary telematics systems costing ₹50,000–₹1,50,000 is financially prohibitive.
-3. **Severe Operational Fatigue:** Indian truck drivers routinely endure grueling **12-to-16-hour shifts**, nighttime highway driving (11 PM – 5 AM), irregular sleep cycles, poor roadside resting facilities, and intense delivery deadlines.
-4. **Microsleep & Highway Hypnosis:** Drowsiness degrades cognitive alertness and reaction time. A momentary **2-to-3 second microsleep episode** at 80 km/h means traveling over 60 meters blind, frequently leading to catastrophic rear-end collisions or off-road rollovers.
-5. **Lack of Early Retrofit Warning:** Factory-level ADAS solutions require deep vehicle-specific electrical integration. There is an urgent national need for an **affordable, 100% plug-and-play, portable AI safety retrofit** that operates independently from vehicle electronics and functions without continuous internet connectivity.
+- **Dual-Edition Architecture:**
+  - **Software Edition:** Full-stack FastAPI + React 19 application for fleet management, desktop terminals, driver training simulators, and code evaluation.
+  - **Edge Edition:** Dedicated, headless, autostarting embedded device targeting Raspberry Pi 4B/5, Coral TPU, or Hailo-8 with hardware GPIO control.
+- **Dual-Layer Audio Playback:**
+  - **Host Hardware Output:** Native cross-platform low-latency playback via `afplay` (macOS), `aplay`/`paplay`/`mpg123` (Linux/Raspberry Pi), and `winsound`/WMP (Windows).
+  - **In-Browser Web Audio:** Automatic client-side sound execution in the React dashboard with sequential WAV tones, MP3 voice directives, Web Audio API oscillator synthesis, and Web Speech API fallback.
+- **Offline-First Encrypted Fleet Sync:**
+  - Local SQLite event store protected with authenticated AES/HMAC encryption.
+  - Strictly preserves driver privacy: zero raw video or facial frames stored by default.
+  - Automatically pushes rolling event telemetry to centralized fleet servers over MQTT or REST when cellular connectivity is re-established.
+- **Native Multilingual Voice Directives:**
+  - Native audio alerts in **7 Indian languages**: English (`en`), Hindi (`hi`), Marathi (`mr`), Telugu (`te`), Tamil (`ta`), Kannada (`kn`), and Bengali (`bn`).
 
 ---
 
-## 🎯 Mission & Key Objectives
+## 🏗️ System Architecture
 
-> **Mission:** Prevent drowsiness-related road accidents by delivering an affordable, ultra-reliable, privacy-first computer-vision device that retrofits seamlessly into any commercial vehicle cabin.
+```mermaid
+flowchart TD
+    subgraph SENSORS ["1. Visual & Contextual Inputs"]
+        CAM["Wide-Angle / NoIR Camera (30 FPS)"]
+        GPS["GPS / NMEA Serial Telemetry"]
+        BTN["Hardware Snooze / Acknowledge Button"]
+    end
 
-```text
- ┌─────────────────────────────────────────────────────────────────────────────┐
- │                           DRISHTIDRIVE AI OBJECTIVES                        │
- ├────────────────────────┬──────────────────────────┬─────────────────────────┤
- │  🔌 Zero Vehicle Mod   │  ⚡ 100% Edge Offline    │  🔊 3-Stage Escalation  │
- │  Runs via 12V/24V USB  │  No cloud or internet    │  Buzzer + voice alerts  │
- │  cigarette adapter     │  dependencies required   │  + visual HUD strobe    │
- ├────────────────────────┼──────────────────────────┼─────────────────────────┤
- │  🎯 High Recall AI     │  ⏱️ Micro-Blink Guard    │  💰 Ultra-Affordable    │
- │  Catches closed eyes   │  Prevents false alarms   │  Target hardware cost   │
- │  under low light/glare │  from natural blinking   │  under ₹3,500 – ₹5,000  │
- └────────────────────────┴──────────────────────────┴─────────────────────────┘
+    subgraph DETECTION ["2. Perception & Feature Extraction"]
+        YOLO["YOLO11n-Pose Landmark Engine"]
+        EYE_CROP["Eye ROI Extraction (96x96 Normalization)"]
+        CNN["Depthwise-Separable CNN (INT8 / FP32)"]
+        POSE["3D Head Pose Estimator (Pitch, Yaw, Roll)"]
+        MAR["Mouth Aspect Ratio (Yawn Tracker)"]
+        DIST["Distraction Detector (Phone / Gaze Away / Belt)"]
+    end
+
+    subgraph FUSION ["3. Multi-Signal Fusion & Temporal Analysis"]
+        CALIB["Per-Driver Calibration Engine"]
+        PERCLOS["Rolling PERCLOS Window (30s)"]
+        SCORE["Weighted Risk Scoring (Eye + PERCLOS + Pose + Yawn)"]
+        FSM["3-Stage Debounced Escalation State Machine"]
+        RESP["Driver Response Verification (Stage 2 Challenge)"]
+    end
+
+    subgraph ACTUATION ["4. Multi-Channel Actuation"]
+        AUDIO_HOST["Host Audio Engine (afplay / aplay / winsound)"]
+        GPIO["Edge Hardware (Piezo Buzzer, RGB LED, Haptic Motor)"]
+        WS["FastAPI WebSocket Streamer"]
+        UI["React 19 Real-Time Telemetry Dashboard"]
+        FLEET["Encrypted SQLite Local Store -> MQTT Fleet Sync"]
+    end
+
+    CAM --> YOLO
+    YOLO --> EYE_CROP
+    YOLO --> POSE
+    YOLO --> MAR
+    YOLO --> DIST
+    EYE_CROP --> CNN
+
+    CNN --> CALIB
+    CALIB --> PERCLOS
+    PERCLOS --> SCORE
+    POSE --> SCORE
+    MAR --> SCORE
+    DIST --> SCORE
+    GPS --> FSM
+    BTN --> RESP
+
+    SCORE --> FSM
+    FSM --> RESP
+    FSM --> AUDIO_HOST
+    FSM --> GPIO
+    FSM --> WS
+    WS --> UI
+    FSM --> FLEET
 ```
 
 ---
 
-## ⚡ Two Editions: Software vs. Edge
+## 🔬 Empirical Benchmarks & Evaluation Honesty
 
-To serve both research/desktop fleet environments and real-world in-cabin embedded deployments, DrishtiDrive AI is engineered in two complementary editions:
+In adherence to scientific evaluation honesty, metrics across synthetic clean samples and real-world cabin conditions are reported distinctly. **Dataset 2** (4,200 real in-cabin images; balanced 50% open / 50% closed) serves as the primary headline benchmark.
 
-| Feature / Dimension | 💻 DrishtiDrive AI — Software Edition | 🍓 DrishtiDrive AI — Edge Edition |
-| :--- | :--- | :--- |
-| **Primary Target** | Laptop, desktop, fleet monitoring terminals & training simulators | Dedicated standalone IoT embedded device mounted on truck dashboard |
-| **Compute Core** | x86_64 / ARM CPU (Windows 10/11, Ubuntu, macOS) | Raspberry Pi 4B (4GB/8GB) or Raspberry Pi 5 |
-| **Vision Input** | Standard USB webcam / built-in laptop camera | Raspberry Pi Camera Module 3 (Wide/NoIR) or UVC Night-Vision IR camera |
-| **Alert Actuators** | System audio (MP3/WAV), TTS synthesizer, React Web HUD banner | 85–90 dB Piezo Buzzer, 3W cabin speaker, High-intensity RGB LED indicator |
-| **User Interface** | Full React 19 real-time dashboard + WebSocket stream | Headless auto-boot (`systemd`), physical snooze button, optional 0.96" OLED |
-| **Power Supply** | Standard computer USB power / AC adapter | Vehicle 12V/24V cigarette lighter via isolated 5V 3A step-down buck converter |
-| **Network Reliance**| 100% Localhost offline execution (no external internet needed) | 100% Offline edge inference; zero internet required on the highway |
-| **Deployment State**| Fully operational (`python run.py`) with 108 passed tests | Embedded architecture ready (`docs/edge_edition_notes.md`) |
+### 1. Neural Architecture Benchmark (Dataset 2 - In-Cabin Conditions)
 
----
+| Model Architecture | Test Acc (%) | Closed Recall (%) | Open Specificity (%) | CPU Latency (ms) | Peak FPS | Model Size (MB) | Engineering Role |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Depthwise-Separable CNN** | **72.00%** | 69.67% | **74.33%** | **1.88 ms** | **> 530** | **0.38 MB** | 🏆 **Default Embedded Model:** Minimal latency, ultra-lightweight. |
+| **MobileNetV2** | 71.83% | **73.00%** | 70.67% | 9.36 ms | > 105 | 9.66 MB | 🛡️ **Maximum Safety Model:** Highest closed-eye recall (219/300). |
+| **EfficientNetB0** | **73.83%** | 65.67% | **82.00%** | 13.02 ms | > 75 | 16.52 MB | 🎯 **High Specificity:** Lowest false positive rate. |
+| **Custom CNN** | 67.17% | 70.67% | 63.67% | 1.89 ms | > 520 | 1.19 MB | Compact baseline network. |
+| **ResNet50** | 71.83% | 66.67% | 77.00% | 25.47 ms | ~ 39 | 91.48 MB | Heavyweight baseline; excessive compute overhead for edge devices. |
 
-## 📸 Project Gallery & Visual Telemetry
+> **Dataset Distinction Notice:** On the separate, clean cropped benchmark (`data/eye_state/test`), the model achieves **100.00% accuracy**. However, the headline metrics reported throughout this project reflect the rigorous, in-the-wild Indian driving benchmark (**Dataset 2: 72.00% Accuracy / 71.98% Macro F1**).
 
-### 1. Interactive Web Dashboard (Software Edition)
-The modern dark-mode React dashboard features live camera streaming, real-time facial feature bounding boxes, Eye Aspect Ratio (EAR), Mouth Aspect Ratio (MAR), driver attention gauges, and stage escalation cards:
+### 2. Edge Optimization & INT8 Quantization Benchmark
 
-<div align="center">
-  <img src="reports/screenshots/dashboard_ui.jpg" alt="DrishtiDrive AI Web Dashboard UI" width="920" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" />
-  <p><em>Figure 1: DrishtiDrive AI real-time driver monitoring dashboard showing live telemetry, EAR/MAR gauges, and 3-stage warning cards.</em></p>
-</div>
+Exported and evaluated via `backend/edge/export_onnx_int8.py`:
 
----
+| Representation | Precision | File Size | Size Reduction | Mean Latency (CPU) | Cosine Similarity |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **PyTorch Baseline** | FP32 | 390.2 KB | Reference | 1.88 ms | 1.0000 |
+| **ONNX Standard** | FP32 | 117.9 KB | 69.8% | 1.42 ms | 0.9999 |
+| **Dynamic Quantized ONNX** | **INT8** | **48.5 KB** | **87.6% (vs PyTorch)** | **0.86 ms** | **0.9998** |
 
-### 2. Live AI Pipeline Localization & Detection
-The vision pipeline isolates the driver's face, localizes precise facial keypoints via YOLO11n-Pose, and classifies individual eye states with real-time HUD overlays:
+### 3. Real Video Validation Feed (`reports/test_driver_feed.mp4`)
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="50%">
-        <img src="reports/screenshots/pipeline_annotated_frame_0.jpg" alt="AI Pipeline Keypoint & Eye Localization" width="420" style="border-radius: 6px;" /><br/>
-        <strong>AI Pipeline Detection & Eye Bounding Boxes</strong>
-      </td>
-      <td align="center" width="50%">
-        <img src="reports/screenshots/pipeline_annotated_frame_1.jpg" alt="Closed Eye Drowsiness Detection" width="420" style="border-radius: 6px;" /><br/>
-        <strong>Real-Time Attention Tracking & HUD Overlay</strong>
-      </td>
-    </tr>
-  </table>
-  <p><em>Figure 2: Real-time OpenCV + PyTorch inference tracking driver eye states, bounding boxes, and temporal closure counters.</em></p>
-</div>
-
----
-
-### 3. Driver Cabin Video Feed & Confusion Matrix Analysis
-Tested on real driver driving sequences (`reports/test_driver_feed.mp4`) and benchmarked across candidate neural architectures:
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="50%">
-        <img src="reports/screenshots/driver_feed_frame_0.jpg" alt="Driver Feed Frame 0" width="380" style="border-radius: 6px;" /><br/>
-        <strong>Attentive Driving Feed (Sample Frame)</strong><br/>
-        <small>Available in repository: <code>reports/test_driver_feed.mp4</code></small>
-      </td>
-      <td align="center" width="50%">
-        <img src="reports/depthwise_cnn_confusion_matrix.png" alt="Depthwise-Separable CNN Confusion Matrix" width="380" style="border-radius: 6px;" /><br/>
-        <strong>Winning Depthwise CNN Confusion Matrix</strong><br/>
-        <small>72.0% Accuracy | 1.88 ms CPU Latency | 0.38 MB Footprint</small>
-      </td>
-    </tr>
-  </table>
-  <p><em>Figure 3: Driver cabin test video sample (left) alongside held-out confusion matrix metrics (right).</em></p>
-</div>
+Evaluated with `backend/evaluate_video.py`:
+- **Frames Evaluated:** 60 consecutive frames
+- **Face Localization Rate:** **100.0%** (60/60 frames)
+- **Uncertainty Rate:** **0.0%** (0/60 frames classified as uncertain; resolved previous detector sensitivity issue)
+- **Mean Processing Time:** 31.4 ms/frame (31.8 FPS on standard laptop CPU)
 
 ---
 
 ## 🚨 Three-Stage Escalating Alert System
 
-DrishtiDrive AI rejects single-threshold binary alarms, which cause driver annoyance, alert fatigue, and device disconnection. Instead, it utilizes an intelligent **temporal debouncing state machine** that separates natural blinks (100–450 ms) from sustained eye closures:
+DrishtiDrive AI rejects jarring binary alarms that cause drivers to turn off the device. Alerts escalate smoothly based on sustained eye closure and multi-signal risk:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Attentive: Driver Eyes Open
-
-    Attentive --> MicroBlink: Closure < 450ms
-    MicroBlink --> Attentive: Eyes Reopen (No Alert)
+    [*] --> Attentive: Driver Eyes Open / Attentive
+    
+    Attentive --> MicroBlink: Closure < 450 ms
+    MicroBlink --> Attentive: Normal Blink (No Alert)
 
     Attentive --> Stage1: Closure > 0.8s
-    Stage1 --> Attentive: Eyes Reopen (Reset)
-    
+    Stage1 --> Attentive: Reopened (Reset)
+
     Stage1 --> Stage2: Closure > 1.8s
-    Stage2 --> Attentive: Eyes Reopen (Cooldown)
+    Stage2 --> Stage2Challenge: Prompt Button / Voice Ack
+    Stage2Challenge --> Attentive: Driver Responded within 5s
+    Stage2Challenge --> Stage3: No Response within 5s
 
     Stage2 --> Stage3: Closure > 3.0s (Microsleep)
-    Stage3 --> Attentive: Reopened + Driver Acknowledge / Cooldown
+    Stage3 --> Attentive: Eyes Open + Cooldown Reset
 ```
 
-### Escalation Hierarchy Details:
+| Tier | Threshold | Audio Tone | Voice Directive (Sample: English / Hindi) | Visual / Haptic Feedback |
+| :--- | :--- | :--- | :--- | :--- |
+| **Stage 1: Attention Warning** | Continuous closure **> 0.8s** | Single gentle beep (520 Hz, 300 ms) | 🇬🇧 *"Please stay alert. Keep your eyes on the road."*<br/>🇮🇳 *"कृपया सतर्क रहें। सड़क पर ध्यान दें।"* | Subtle amber HUD border |
+| **Stage 2: Drowsiness Warning** | Continuous closure **> 1.8s** | Dual repeating chime (750 Hz, 500 ms) | 🇬🇧 *"Warning! You may be getting drowsy. Please find a safe place to stop."*<br/>🇮🇳 *"चेतावनी! आपको नींद आ रही है। सुरक्षित जगह रुकें।"* | Vibrant orange banner + 0.5s tactile haptic pulse |
+| **Stage 3: Critical Alarm** | Continuous closure **> 3.0s** (Microsleep) | High-penetration pulsed siren (880–1200 Hz, 85–90 dB) | 🇬🇧 *"Danger! Pull over safely as soon as possible. Do not continue driving while drowsy."*<br/>🇮🇳 *"खतरा! तुरंत गाड़ी रोकें। नींद में गाड़ी न चलाएं।"* | Flashing red HUD strobe + continuous 1.0s haptic vibration |
 
-| Alert Tier | Trigger Condition | Auditory Feedback | Multilingual Voice Warning (EN / HI / MR) | Visual Strobe | Target Objective |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Stage 1: Early Warning** | Continuous closure **> 0.8 seconds** | Gentle single beep (880 Hz, 300 ms) | 🇬🇧 *"Please stay alert. Keep your eyes on the road."*<br/>🇮🇳 *"कृपया सतर्क रहें। सड़क पर ध्यान दें।"*<br/>🚩 *"कृपया सतर्क राहा. रस्त्यावर लक्ष ठेवा."* | Subtle Amber HUD border | Gently cues driver during prolonged blinking or gaze wandering. |
-| **Stage 2: Drowsiness Warning** | Continuous closure **> 1.8 seconds** | Double chime tone (1046 Hz, 500 ms) | 🇬🇧 *"Warning! You may be getting drowsy. Please find a safe place to stop."*<br/>🇮🇳 *"चेतावनी! आपको नींद आ रही है। सुरक्षित जगह रुकें।"*<br/>🚩 *"सावधान! तुम्हाला झोप येत आहे. सुरक्षित ठिकाणी थांबा."* | Vibrant Orange pulsing banner | Signals onset of fatigue; strongly advises finding an upcoming dhaba or rest stop. |
-| **Stage 3: Critical Alarm** | Continuous closure **> 3.0 seconds** (Microsleep) | Urgent loud modulated siren (1200 Hz pulsing, 85–90 dB) | 🇬🇧 *"Danger! Pull over safely as soon as possible. Do not continue driving while drowsy."*<br/>🇮🇳 *"खतरा! तुरंत गाड़ी रोकें। नींद में गाड़ी न चलाएं।"*<br/>🚩 *"धोका! ताबडतोब गाडी थांबवा. झोपेत गाडी चालवू नका."* | High-intensity Flashing Red strobe | Emergency awaken intervention to prevent an imminent highway collision. |
-
-> **Graceful Degradation Hold:** If the driver turns their head, yawns broadly, or if the camera is momentarily occluded, the system holds its state rather than spamming false emergency alarms or blindly assuming open eyes.
-
----
-
-## 🏗️ End-to-End System Architecture
-
-```text
- ┌────────────────────────────────────────────────────────────────────────────────────────┐
- │                              DRISHTIDRIVE AI PIPELINE                                  │
- └────────────────────────────────────────────────────────────────────────────────────────┘
-
-    [ Camera Sensor ] ───▶ [ OpenCV Frame Capture ]
-                                  │
-                                  ▼
-                   [ YOLO11n-Pose Landmark Engine ]
-                                  │
-              ┌───────────────────┴───────────────────┐
-              ▼                                       ▼
-     [ Left Eye ROI Crop ]                  [ Right Eye ROI Crop ]
-     (96x96 Normalization)                  (96x96 Normalization)
-              │                                       │
-              └───────────────────┬───────────────────┘
-                                  ▼
-                [ Lightweight PyTorch Eye Classifier ]
-                (MobileNetV2 / Depthwise-Separable CNN)
-                                  │
-                                  ▼
-                    [ Temporal Debounce Engine ]
-                     Filters micro-blinks (450ms)
-                                  │
-                                  ▼
-              [ 3-Stage Drowsiness Escalation FSM ]
-              Stage 1 (>0.8s) | Stage 2 (>1.8s) | Stage 3 (>3.0s)
-                                  │
-        ┌─────────────────────────┴─────────────────────────┐
-        ▼                                                   ▼
- 💻 Software Edition                                 🍓 Edge Edition
- ├── FastAPI Backend & WebSockets                    ├── GPIO Piezo Buzzer (85-90 dB)
- ├── React 19 Real-Time Dashboard                    ├── 3W Cabin Speaker (I2S Audio)
- ├── HUD Overlays & Audio Synthesizer                ├── High-Intensity RGB Indicator
- └── Multilingual Audio Playback (MP3/WAV)           └── Tactile Snooze/Acknowledge Button
-```
+> **Context-Aware Safety Protections:**
+> - **GPS Siren Suppression:** Stage 3 audible sirens are automatically suppressed if vehicle speed is $< 5\text{ km/h}$ (stationary at toll plazas or signals), downgrading to Stage 2 tones to prevent nuisance.
+> - **Driver Response Check:** At Stage 2, if the driver does not tap the snooze button or speak within 5.0 seconds, the system escalates directly to Stage 3.
+> - **Trip Timer & Rest Advisory:** Tracks uninterrupted driving time and triggers advisory break reminders every 2 hours.
 
 ---
 
-## 🔬 AI Model Benchmark & Evaluation
+## 💻 Interactive Web Dashboard
 
-Six deep learning architectures were trained, evaluated, and stress-tested on real driver in-cabin conditions (**Dataset 2: 4,200 driving images**, perfectly balanced 50% open / 50% closed):
+The Software Edition features an interactive **React 19** dark-mode dashboard built with Vite and TailwindCSS:
 
-### Model Comparison Benchmark:
-
-| Model Architecture | Test Acc (%) | Closed-Eye Safety Recall (%) | Open Specificity (%) | CPU Latency (ms) | Peak FPS | Model Size (MB) | Architectural Verdict |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Depthwise-Separable CNN** | **72.00%** | 69.67% | **74.33%** | **1.88 ms** | **> 530** | **0.38 MB** | 🏆 **Edge Embedded Champion:** Lowest latency, tiny memory footprint, ideal for Raspberry Pi. |
-| **MobileNetV2** | 71.83% | **73.00%** | 70.67% | 9.36 ms | > 105 | 9.66 MB | 🛡️ **Safety Winner:** Caught highest closed eyes (219/300), lowest missed microsleeps. |
-| **EfficientNetB0** | **73.83%** | 65.67% | **82.00%** | 13.02 ms | > 75 | 16.52 MB | 🎯 **Highest Specificity:** Lowest false alarms (54), but missed 103 closed-eye instances. |
-| **Custom CNN** | 67.17% | 70.67% | 63.67% | 1.89 ms | > 520 | 1.19 MB | Compact baseline architecture. |
-| **ResNet50** | 71.83% | 66.67% | 77.00% | 25.47 ms | ~ 39 | 91.48 MB | Heavyweight; high power draw without accuracy advantage on edge hardware. |
-| **YOLOv12n Full Detector** | *N/A* | *BBox Detection* | *N/A* | 53.82 ms | ~ 18 | 5.34 MB | Full 640×640 driver bounding box detection. |
-
-### Robustness & Optical Invariance:
-- **Eyeglasses & Spectacles Cohort:** Maintained 0.0% false alarm rate through frame-level temporal debouncing.
-- **Low-Light / Night Cabin Conditions:** Tested under underexposed illumination simulating nocturnal highway driving.
-- **Sun Glare & Reflections:** Crop normalization (`eval_transform` with ImageNet standard deviation) mitigates windshield flare.
+- **Live Monitoring Tab:** Real-time 30 FPS video feed, YOLO bounding boxes, facial landmark tracking, instantaneous EAR and MAR meters, and active alert stage cards.
+- **Explainability Tab:** Multi-signal temporal trend charts visualizing EAR, PERCLOS, head nod pitch, and yawn events over time, explaining *why* an alert fired.
+- **Trip Report Tab:** Complete driving session report with fatigue risk index, total alert count, longest closure duration, and exportable PDF/HTML trip summaries.
+- **Grad-CAM Debug View:** Interactive convolutional activation maps showing where the neural network focuses its spatial attention on the driver's eyes.
 
 ---
 
-## 🛠️ Next Phase: Embedded Hardware Prototype & Further Development
+## 🍓 Edge Hardware Specification
 
-With the software and AI model benchmarking successfully validated (**Phase 1: Software Edition complete with 94 passing tests**), the project advances into **Phase 2 & Phase 3: Dedicated Embedded Hardware Prototyping (DrishtiDrive AI — Edge Edition)**.
+The Edge Edition is engineered for low-cost in-cabin fabrication:
 
-This phase transforms the computer-vision pipeline into a physical, standalone, windshield-mounted IoT automotive safety device designed specifically for the extreme operating realities of Indian commercial truck cabins.
-
-<div align="center">
-  <img src="reports/screenshots/hardware_prototype.jpg" alt="DrishtiDrive AI Embedded Hardware Prototype, Components, and Circuit Diagram" width="960" style="border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.4);" />
-  <p><em>Figure 4: DrishtiDrive AI Edge Edition — physical dashcam prototype form factor (left), modular hardware bill of materials (top right), and complete GPIO circuit wiring schematic (bottom right).</em></p>
-</div>
-
----
-
-### 1. Prototype Enclosure & Ergonomic In-Cabin Design
-As designed in the physical blueprint:
-- **Windshield Suction Mount:** Securely adheres to commercial truck windscreens, placing the lens at direct eye level (~50–80 cm from the driver) without obstructing road visibility.
-- **Compact 3D-Printed ABS Enclosure:** Custom heat-resistant housing with passive convection ventilation and active micro-fan mounting to survive ambient cabin heat (>50°C in Indian summer conditions).
-- **Integrated Wide-Angle Camera:** 8MP sensor with high dynamic range (HDR) and optional infrared (IR) night vision to track driver eyes even in pitch-black nocturnal conditions.
-- **Physical Tri-Color LED Indicator Bar:** Provides subtle peripheral visual cues (Green: Normal/Attentive, Yellow: Stage 1/2 Warning, Red: Stage 3 Emergency).
-- **High-Decibel Acoustic Speaker / Buzzer:** Direct forward-facing grille designed to pierce 75–85 dB truck diesel engine rumbling without requiring external cabin amplifiers.
-
----
-
-### 2. Hardware Components Breakdown (from PRD & Blueprint)
-
-| Component | Specification | Technical Role in System |
-| :--- | :--- | :--- |
-| **Edge Compute Core** | **Raspberry Pi 4 (4GB / 8GB RAM)** | Autonomous local AI processing unit running headless Raspberry Pi OS (64-bit). Executes OpenCV face tracking and quantized CNN inference locally with zero cloud reliance. |
-| **Vision Sensor** | **Raspberry Pi Camera Module (8MP, Wide-Angle / NoIR)** | Connected via dedicated MIPI CSI ribbon cable for zero-latency DMA frame acquisition. Wide field of view ensures the driver's face remains localized regardless of driver height or seat position. |
-| **Auditory Alarm** | **5V Active Piezo Buzzer (85–90 dB)** | Driven via NPN transistor / direct GPIO to produce high-penetration audible alerts during Stage 1 warnings and Stage 3 emergency sirens. |
-| **Status LEDs** | **Tri-Color Diffused LEDs (Red, Yellow, Green)** | High-brightness 5mm indicators with 220Ω/330Ω current-limiting resistors providing non-distracting visual peripheral state feedback. |
-| **Acknowledge Button**| **Tactile Momentary Push Button** | Driver-accessible snooze / reset button connected to GPIO with software debouncing. Allows the driver to silence false alarms or acknowledge rest warnings without taking eyes off the road. |
-| **Storage & OS** | **128GB High-Endurance SanDisk MicroSD** | Holds OS image, lightweight TFLite/ONNX models, offline audio catalog (EN/HI/MR), and encrypted rolling telemetry event logs. |
-| **Power Conversion** | **5V 3A USB-C Power Adapter / Buck Module** | Regulates fluctuating vehicle battery voltage (12V in small trucks, 24V in heavy haulers) down to a stable 5V 3A supply via the auxiliary cigarette lighter port. |
-| **Protective Shell** | **Custom 3D-Printed High-Temp Case (ABS/PETG)** | Heat-deflecting enclosure shielding internal electronics against windshield solar radiation and cabin vibrations. |
-
----
-
-### 3. Circuit Wiring & GPIO Pinout Mapping
-
-The circuit diagram illustrates the exact electrical wiring between the Raspberry Pi 4 and the peripheral alert actuators:
-
-```text
- ┌─────────────────────────────────────────────────────────────────────────────┐
- │                      RASPBERRY PI 4 GPIO CIRCUIT SCHEMATIC                  │
- └─────────────────────────────────────────────────────────────────────────────┘
-
-    [ Raspberry Pi 4 ]
-    ├── MIPI CSI Port ══════════════════════════════▶ [ 8MP Camera Module ]
-    ├── GPIO 18 (Pin 12) ──[ 1kΩ ]──[ NPN Transistor ]▶ [ 5V Active Buzzer ]
-    ├── GPIO 17 (Pin 11) ──[ 330Ω Resistor ]────────▶ [ Red LED (Critical) ]
-    ├── GPIO 27 (Pin 13) ──[ 330Ω Resistor ]────────▶ [ Yellow LED (Warning) ]
-    ├── GPIO 22 (Pin 15) ──[ 330Ω Resistor ]────────▶ [ Green LED (Normal) ]
-    ├── GPIO 23 (Pin 16) ──[ Pull-Up Input ]────────▶ [ Push Button (Snooze) ]
-    ├── GND (Pin 6/9/14/20/25/30/34/39) ────────────▶ Common Ground Rail
-    └── USB-C Power Port ◀─────────────────────────── [ 5V 3A Buck Converter ]
-                                                            ▲
-                                                            │ (12V/24V Input)
-                                                [ Vehicle Cigarette Socket ]
-```
-
-#### Detailed Pin Connection Table:
-
-| Peripheral | RPi Interface / Pin | GPIO Number | Function / Behavior |
-| :--- | :--- | :---: | :--- |
-| **Camera Module** | 15-pin MIPI CSI | *Direct CSI* | 30 FPS raw camera stream to OpenCV VideoCapture |
-| **5V Active Buzzer** | Physical Pin 12 | **GPIO 18** (PWM) | Generates 880 Hz beep (Stage 1) and pulsed 1200 Hz siren (Stage 3) |
-| **Red Indicator** | Physical Pin 11 | **GPIO 17** | Latches HIGH during Stage 3 Critical Alarm (>3.0s closure) |
-| **Yellow Indicator** | Physical Pin 13 | **GPIO 27** | Latches HIGH during Stage 1 (>0.8s) & Stage 2 (>1.8s) Drowsiness Warning |
-| **Green Indicator** | Physical Pin 15 | **GPIO 22** | Solid HIGH when driver eyes are open and system is actively monitoring |
-| **Push Button** | Physical Pin 16 | **GPIO 23** | Active-LOW momentary switch to snooze alerts or initiate hardware self-test |
-| **System Ground** | Physical Pin 6, 9, 14, 20 | **GND** | Return path for all LEDs, buzzer transistor, and button |
-| **Isolated Power** | USB-C Type Connector | **VBUS (5V)** | Pure DC 5V 3A isolated from truck electrical spikes |
-
-> [!WARNING]
-> **Automotive Electrical Isolation Safety Rule (PRD §3.2):**  
-> DrishtiDrive AI Edge is designed strictly as an **independent retrofit**. It draws power exclusively from the vehicle's standard auxiliary 12V/24V cigarette lighter socket through a certified step-down buck converter. **It never taps into the vehicle CAN bus, ECU, braking hydraulics, or steering column.**
-
----
-
-### 4. Implementation Roadmap & Development Milestones
-
-```mermaid
-gantt
-    title DrishtiDrive AI Development Roadmap
-    dateFormat  YYYY-MM-DD
-    section Phase 1: Software Edition
-    Dataset 2 Training & Model Benchmark       :done, p1_1, 2026-10-01, 2026-10-08
-    FastAPI + React 19 Dashboard               :done, p1_2, 2026-10-08, 2026-10-11
-    3-Stage Alert State Machine & 94 Tests     :done, p1_3, 2026-10-11, 2026-10-12
-    section Phase 2: Edge Optimization
-    Model Export to TFLite (INT8 Quantization) :active, p2_1, 2026-10-13, 2026-10-20
-    ONNX Runtime + ARM NEON Acceleration       :p2_2, 2026-10-18, 2026-10-25
-    section Phase 3: Hardware Prototype
-    Breadboard Circuit Assembly (GPIO Pinout)  :p3_1, 2026-10-25, 2026-11-02
-    Custom PCB Shield & Passive Thermal Sink   :p3_2, 2026-11-01, 2026-11-10
-    3D-Printed ABS Dashcam Enclosure           :p3_3, 2026-11-08, 2026-11-16
-    Headless systemd Daemon & Boot Automation  :p3_4, 2026-11-12, 2026-11-20
-    section Phase 4: Fleet & Road Trials
-    Truck Cabin Vibration & Thermal Stress     :p4_1, 2026-11-20, 2026-12-05
-    Highway Night Driving Road Trials (NH44)   :p4_2, 2026-12-01, 2026-12-20
-    Driver Usability & Alert Feedback Tuning   :p4_3, 2026-12-15, 2026-12-30
-```
-
----
-
-## 🍓 Raspberry Pi Edge Hardware Specification & Circuit Diagram
-
-The estimated Bill of Materials (BOM) for fabricating the Edge Edition prototype packages affordability into the retrofit design:
-
-### Bill of Materials (BOM) & Estimated Retrofit Cost:
+### Bill of Materials (BOM) & Estimated Retrofit Cost
 
 | Component | Specification | Estimated Cost (INR) | Role |
 | :--- | :--- | :---: | :--- |
-| **Single Board Computer** | Raspberry Pi 4B (4GB) or Pi 5 | ₹3,500 – ₹4,500 | Autonomous on-device AI inference engine |
-| **Camera Module** | RPi Camera Module (8MP Wide-Angle) | ₹1,000 – ₹1,500 | Face & eye keypoint capture via CSI ribbon cable |
-| **Power Converter** | 12V/24V to 5V 3A Isolated Buck Module (USB-C) | ₹250 – ₹400 | Safe power from truck cigarette lighter socket |
-| **Audio Alert System** | Active 5V Buzzer + 3W Cabin Speaker (I2S DAC) | ₹200 – ₹350 | Penetrates 75–85 dB truck cabin engine noise |
-| **Visual Indicators** | High-Brightness Diffused LEDs (Red, Yellow, Green) | ₹50 – ₹100 | Multi-stage peripheral dashboard alert bar |
-| **Tactile Button** | Momentary panel-mount push button (GPIO 23) | ₹30 – ₹50 | Driver alert cancellation / snooze input |
-| **MicroSD Card** | 128GB SanDisk High-Endurance Class 10 | ₹700 – ₹900 | OS, models, audio assets, and telemetry logs |
-| **Enclosure** | High-temperature ABS 3D-printed dashcam case | ₹250 – ₹350 | Heat-resistant cabin mounting with suction cup |
-| **Total Estimated Cost** | **Complete Hardware Prototype Package** | **~ ₹5,980 – ₹7,650** | **< 5% the cost of factory ADAS systems!** |
+| **Single Board Computer** | Raspberry Pi 4B (4GB) or Pi 5 | ₹3,500 – ₹4,500 | Autonomous on-device inference core |
+| **Vision Sensor** | RPi Camera Module 3 (Wide / NoIR) | ₹1,000 – ₹1,500 | MIPI CSI camera with low-light / IR support |
+| **Power Converter** | 12V/24V to 5V 3A Isolated Buck Module | ₹250 – ₹400 | Step-down converter from vehicle cigarette lighter |
+| **Audio Hardware** | 5V Active Piezo Buzzer + 3W Speaker | ₹200 – ₹350 | Forward-facing acoustic alarm (85–90 dB) |
+| **Visual Indicators** | High-Brightness Diffused LEDs (R/Y/G) | ₹50 – ₹100 | Peripheral dashboard status indicators |
+| **Tactile Button** | Momentary Panel Push Button (GPIO 23) | ₹30 – ₹50 | Snooze, acknowledgement, and self-test |
+| **Haptic Actuator** | 5V Coin Vibration Motor (GPIO 25) | ₹80 – ₹120 | Tactile steering-wheel / seat vibration pulse |
+| **Storage & OS** | 64GB / 128GB High-Endurance MicroSD | ₹500 – ₹800 | Read-only OS partition + encrypted SQLite DB |
+| **Enclosure** | 3D-Printed High-Temp ABS Housing | ₹250 – ₹350 | Windshield suction mount, heat-resistant |
+| **Total Estimated Cost** | **Complete Hardware Retrofit Kit** | **~ ₹5,860 – ₹7,670** | **< 5% the cost of commercial ADAS!** |
+
+### GPIO Pinout & Circuit Schematic
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      RASPBERRY PI 4 / 5 GPIO SCHEMATIC                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+   [ Raspberry Pi ]
+   ├── MIPI CSI Connector ═══════════════════════════▶ [ 8MP Camera Module ]
+   ├── GPIO 18 (Physical Pin 12) ──[ 1kΩ / NPN ]─────▶ [ 5V Piezo Buzzer ]
+   ├── GPIO 17 (Physical Pin 11) ──[ 330Ω ]──────────▶ [ Red LED (Stage 3) ]
+   ├── GPIO 27 (Physical Pin 13) ──[ 330Ω ]──────────▶ [ Yellow LED (Stage 1/2) ]
+   ├── GPIO 22 (Physical Pin 15) ──[ 330Ω ]──────────▶ [ Green LED (Normal) ]
+   ├── GPIO 25 (Physical Pin 22) ──[ 1kΩ / NPN ]─────▶ [ Haptic Motor ]
+   ├── GPIO 23 (Physical Pin 16) ──[ Pull-Up Input ]─▶ [ Snooze / Reset Button ]
+   ├── System Ground (Pins 6, 9, 14, 20) ────────────▶ Common Ground Rail
+   └── USB-C Power Jack ◀───────────────────────────── [ 12V/24V to 5V 3A Buck ]
+                                                              ▲
+                                                              │ (Vehicle Power)
+                                                  [ Cigarette Lighter Socket ]
+```
+
+> [!IMPORTANT]
+> **Electrical Isolation Rule:** DrishtiDrive AI Edge is strictly non-invasive. It connects solely to the auxiliary 12V/24V power socket. **It never splices into CAN bus, ECU wiring, braking hydraulics, or steering columns.**
 
 ---
 
 ## 🚀 Quickstart & Installation
 
-### Prerequisites:
-- **Operating System:** Windows 10/11, Ubuntu 20.04+, or macOS
-- **Python:** Python 3.10+ (tested on Python 3.10 through 3.14)
-- **Node.js:** Node.js 18+ (only needed if compiling the frontend from source)
-- **Camera:** Any standard USB webcam, laptop webcam, or video file
+### Prerequisites
+- **Operating System:** Windows 10/11, macOS 12+, or Ubuntu 20.04+ (Raspberry Pi OS 64-bit for edge)
+- **Python:** Python 3.10 to 3.13
+- **Node.js:** Node.js 18+ (only if rebuilding frontend from source)
+- **Video Input:** Any standard USB webcam, built-in laptop camera, or prerecorded video file
 
 ### 1. Clone & Set Up Environment
 ```bash
@@ -389,102 +281,113 @@ The estimated Bill of Materials (BOM) for fabricating the Edge Edition prototype
 git clone https://github.com/sathvikkasanagpttu/drishtidrive-ai.git
 cd drishtidrive-ai
 
-# Create a virtual environment (recommended)
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Linux/macOS:
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# On macOS / Linux:
 source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
----
+### 2. Launch Application
 
-### 2. Launch DrishtiDrive AI
-
-#### Option A: Unified Application (Full Dashboard + Backend)
-Launch the unified server with one single command:
+#### Option A: Unified Full Application (Recommended)
+Launches the FastAPI backend and serves the compiled React 19 dashboard:
 ```bash
 python run.py
 ```
-- Automatically opens your default browser at `http://127.0.0.1:8000/`.
-- Full live camera feed, real-time bounding boxes, EAR/MAR meters, and audio alerts.
+*Automatically opens `http://127.0.0.1:8000/` in your default browser.*
 
-#### Option B: Standalone OpenCV Window (Headless / Desktop Debug)
-If you prefer a lightweight native OpenCV window without starting the web dashboard:
+#### Option B: Standalone Desktop OpenCV Window
+Runs the lightweight computer-vision loop directly in an OpenCV window:
 ```bash
 python run.py --cli
 ```
 
-#### Option C: Simulated Highway Video Feed
-Run the complete pipeline against pre-recorded driver footage (no webcam required):
+#### Option C: Test on Prerecorded Driver Footage
+Execute the entire pipeline against test footage without needing a webcam:
 ```bash
 python run.py --cli --video reports/test_driver_feed.mp4
 ```
 
-#### Option D: Frontend Development Server
-If you are developing or modifying the React dashboard with Vite HMR:
+#### Option D: Edge Headless Mode (Raspberry Pi Daemon)
+Runs the lightweight edge runner with systemd watchdog heartbeats:
 ```bash
-# Terminal 1: Backend API
-python run.py --no-browser
-
-# Terminal 2: React Vite Dev Server
-cd frontend
-npm install
-npm run dev
-# Access at http://localhost:3000/
+python -m backend.edge.edge_runner --headless
 ```
 
 ---
 
-## 🌐 Interactive Dashboard & API Telemetry
+## 🧪 Verification & Testing
 
-The application exposes a high-performance **FastAPI** backend with real-time **WebSocket** streaming and interactive OpenAPI Swagger docs:
+Every metric, latency figure, and test count is reproducible directly from the repository:
 
-- **Web Dashboard:** [`http://127.0.0.1:8000/`](http://127.0.0.1:8000/)
-- **Interactive API Documentation:** [`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs)
-- **Alternative ReDoc Docs:** [`http://127.0.0.1:8000/redoc`](http://127.0.0.1:8000/redoc)
-- **Real-Time WebSocket Feed:** `ws://127.0.0.1:8000/ws/stream`
-
-### Key REST Endpoints:
-```http
-GET  /api/health            # System heartbeat, camera status, and active model
-GET  /api/telemetry         # Latest instantaneous EAR, MAR, attention score & alert stage
-POST /api/alerts/preview    # Triggers acoustic & visual multi-stage test alert
-POST /api/camera/start      # Initializes video capture thread
-POST /api/camera/stop       # Safely releases camera device
-```
-
----
-
-## 🧪 Running the Test Suite
-
-DrishtiDrive AI enforces continuous verification standards across all core subsystems.
-
-### 1. Run Complete Test Suite (125 Tests: 123 Passed, 2 Skipped)
+### 1. Run Complete Pytest Suite (132 Tests: 130 Passed, 2 Skipped)
 ```bash
-./venv/bin/pytest tests/ -v
+pytest tests/ -v
 ```
-Verifies camera capture, YOLO keypoints, temporal debouncing, 3-stage escalation, multi-signal fusion, 3D head pose, distraction detection, offline encrypted SQLite fleet store, GPS speed gating, driver response challenge, camera tamper detection, mock GPIO actuation, and Grad-CAM explainability.
+Validates:
+- Eye classification & temporal debouncing
+- 3-stage escalation state machine & cooldowns
+- Multi-signal fusion (EAR, MAR, PERCLOS, Blink Rate)
+- 3D head pose estimation & distraction detection
+- Cross-platform audio playback & audio API streaming
+- Encrypted SQLite fleet database & MQTT synchronization
+- Driver calibration & response challenge
+- Edge GPIO actuation, camera tamper detection, and watchdog notifications
 
-### 2. Run Playwright End-to-End Dashboard Tests
+### 2. Run Individual Evaluation Scripts
 ```bash
-cd frontend && npx playwright test
-```
-Verifies full UI smoke tests, multi-page tab navigation (Live Monitoring, Explainability, Trip Report, Grad-CAM Debug), and captures screenshots into `.agent/screenshots/`.
+# Model evaluation on in-the-wild Indian test benchmark
+python backend/evaluate_integration.py
 
-### 3. Execute End-to-End Safety Benchmarks
-```bash
-# Model evaluation on in-the-wild Indian test set
-./venv/bin/python backend/evaluate_integration.py
-
-# Real video clip validation
-./venv/bin/python backend/evaluate_video.py --video reports/test_driver_feed.mp4
+# Video feed verification
+python backend/evaluate_video.py --video reports/test_driver_feed.mp4
 
 # ONNX & Dynamic INT8 quantization benchmark
-./venv/bin/python backend/edge/export_onnx_int8.py
+python backend/edge/export_onnx_int8.py
+
+# Audio-visual subsystem verification
+python backend/validate_alerts.py
+```
+
+### 3. Frontend End-to-End Tests (Playwright)
+```bash
+cd frontend
+npx playwright test
+```
+
+---
+
+## 🌐 API Reference & Telemetry
+
+The application provides a high-performance **FastAPI** backend with real-time **WebSocket** telemetry:
+
+- **Web Dashboard:** `http://127.0.0.1:8000/`
+- **Interactive Swagger Docs:** `http://127.0.0.1:8000/docs`
+- **ReDoc Documentation:** `http://127.0.0.1:8000/redoc`
+- **Live Telemetry WebSocket:** `ws://127.0.0.1:8000/ws/stream`
+
+### Core REST Endpoints:
+```http
+GET  /api/health                  # Heartbeat, camera status, active model
+GET  /api/telemetry               # Instantaneous EAR, MAR, attention score, alert stage
+GET  /api/audio/tone/{stage}      # Stream WAV alert tone (Stages 1, 2, 3)
+GET  /api/audio/voice/{stage}     # Stream MP3 voice directive (Stages 1, 2, 3)
+POST /api/alerts/preview          # Trigger audio-visual test alert
+POST /api/calibration/start       # Begin 30-60s driver baseline calibration
+GET  /api/calibration/status      # Check calibration progress and baseline metrics
+POST /api/calibration/reset       # Clear calibration profile
+POST /api/fleet/sync              # Trigger offline encrypted event sync
+GET  /api/fleet/events            # Retrieve logged events and fleet risk scores
+GET  /api/camera/devices          # Enumerate connected video devices
+POST /api/camera/start            # Start video acquisition thread
+POST /api/camera/stop             # Safely release camera hardware
 ```
 
 ---
@@ -494,56 +397,46 @@ Verifies full UI smoke tests, multi-page tab navigation (Live Monitoring, Explai
 ```text
 Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers/
 ├── backend/
-│   ├── assets/              # Offline alert sounds (.wav) & voice recordings (.mp3)
-│   ├── models/              # Checkpoints for 5 trained candidate CNNs (.pt)
-│   ├── training/            # PyTorch architectures, datasets, transforms & training scripts
-│   ├── alert_catalog.py     # Multilingual voice warning catalog (EN, HI, MR)
-│   ├── alert_manager.py     # Bounded queue, deduplication & cooldown alert manager
-│   ├── alert_sounds.py      # WAV tone generator (880Hz, 1046Hz, 1200Hz modulated)
-│   ├── alert_visual.py      # HUD banner overlays & visual notifications
-│   ├── app.py               # FastAPI backend + WebSocket telemetry & UI static server
-│   ├── audio_backend.py     # Local playback backend (playsound, pyttsx3, mock)
-│   ├── camera.py            # OpenCV VideoCapture worker with thread buffering & FPS tracking
+│   ├── assets/              # Offline WAV alert tones & MP3 voice recordings
+│   ├── context/             # GPS speed gating, trip timer, driver response check
+│   ├── edge/                # ONNX INT8 export, headless edge runner, GPIO actuators, tamper detection
+│   ├── fleet/               # Encrypted offline SQLite fleet store & MQTT sync client
+│   ├── models/              # Checkpoints for candidate CNN architectures
+│   ├── training/            # PyTorch models, transforms (night/IR/glare), distillation, trainer
+│   ├── alert_catalog.py     # Multilingual voice catalog (EN, HI, MR, TE, TA, KN, BN)
+│   ├── alert_manager.py     # Bounded queue, preemption & cooldown alert orchestrator
+│   ├── alert_sounds.py      # Procedural WAV tone synthesis (520Hz, 750Hz, 1200Hz)
+│   ├── alert_visual.py      # HUD visual banners and strobe overlay rendering
+│   ├── api_routes.py        # REST API endpoints (health, camera, settings, audio streaming)
+│   ├── app.py               # FastAPI application, WebSocket streaming, static server
+│   ├── audio_backend.py     # Cross-platform host playback (afplay, aplay, winsound)
+│   ├── mock_audio.py        # In-memory mock audio backend for deterministic testing
+│   ├── calibration.py       # 30-60s per-driver baseline calibration engine
+│   ├── camera.py            # OpenCV camera capture worker with FPS calculation
 │   ├── config.py            # Centralized dataclass configurations
-│   ├── evaluate_integration.py # Phase 8 benchmark runner (FAR, MER, optical tests)
-│   ├── eye_detection.py     # YOLO pose keypoint face and eye region localization
-│   ├── model_inference.py   # PyTorch EyeClassifier with low-confidence thresholding
+│   ├── distraction.py       # Phone usage, looking away (>2s), missing seatbelt detection
+│   ├── evaluate_integration.py # Multi-dataset benchmark runner (Dataset 2 headline)
+│   ├── evaluate_video.py    # Real video clip validation and frame scoring
+│   ├── eye_detection.py     # YOLO11n-pose keypoint localization and eye cropping
+│   ├── fusion.py            # Multi-signal fusion, rolling PERCLOS, risk scoring, LSTM
+│   ├── head_pose.py         # 3D head pose estimation (pitch/yaw/roll) via solvePnP
+│   ├── model_inference.py   # PyTorch EyeClassifier with uncertainty thresholding
 │   ├── pipeline.py          # End-to-end EyeRegionPipeline coordinator
-│   ├── preprocessing.py     # Normalization matching training eval_transform
-│   ├── run_pipeline.py      # Standalone OpenCV window runner
-│   ├── temporal_debouncer.py # Eye state smoothing & transient flicker debouncer
-│   ├── temporal_machine.py  # Time-based state machine & alert escalation
-│   └── temporal_state.py    # DrowsinessState, AlertStage, and status dataclasses
+│   └── temporal_machine.py  # Debounced 3-stage temporal escalation state machine
 ├── frontend/
 │   ├── dist/                # Pre-built production dashboard assets
-│   ├── src/                 # React 19 source components & hooks
-│   ├── tests/               # Playwright dashboard smoke tests
-│   ├── package.json         # Frontend dependencies
-│   └── vite.config.js       # Vite configuration
-├── tests/                   # Complete test suite (81 unit & integration tests)
-│   ├── test_alert_manager.py
-│   ├── test_camera.py
-│   ├── test_eye_detection.py
-│   ├── test_fault_tolerance.py
-│   ├── test_integration_pipeline.py
-│   ├── test_model_inference.py
-│   ├── test_pipeline.py
-│   ├── test_preprocessing.py
-│   ├── test_reliability_privacy_offline.py
-│   ├── test_temporal_logic.py
-│   ├── test_training_pipeline.py
-│   └── test_ui_api.py
-├── data/                    # MRL Eye Dataset train, val, and test partitions
-├── docs/                    # Architecture, model cards, edge notes, design docs
-│   ├── edge_edition_notes.md# Raspberry Pi embedded deployment blueprint
-│   ├── Model_Result.md      # Detailed model comparison & metrics
-│   └── model_card.md        # AI model transparency card
-├── reports/                 # Benchmark metrics, confusion matrices, test video
-│   ├── screenshots/         # Extracted pipeline frames & UI dashboard screenshots
-│   └── test_driver_feed.mp4 # Authentic driver test video feed
-├── run.py                   # Unified single-command application launcher
-├── README.md                # Comprehensive project documentation
-└── requirements.txt         # Root Python requirements
+│   ├── src/                 # React 19 source code
+│   │   ├── components/      # UI components (Monitoring, Explainability, TripReport, GradCAM)
+│   │   ├── hooks/           # useCameraStream WebSocket hook
+│   │   └── utils/           # audioAlert.js in-browser audio player
+│   └── package.json         # Frontend dependencies and scripts
+├── tests/                   # 132 comprehensive tests (130 passing, 2 skipped)
+├── deployment/              # Systemd unit files and edge deployment configurations
+├── docs/                    # Architecture diagrams, model cards, edge notes, dataset guides
+├── reports/                 # Benchmark JSON reports, confusion matrices, test footage
+├── run.py                   # Unified single-command launcher
+├── README.md                # Project documentation
+└── requirements.txt         # Root Python dependencies
 ```
 
 ---
@@ -551,23 +444,23 @@ Portable-AI-Based-Drowsiness-Detection-and-Alert-System-for-Indian-Truck-Drivers
 ## ⚠️ Safety Notice & Limitations
 
 > [!CAUTION]
-> **Experimental Driver-Assistance Prototype Only:**  
-> DrishtiDrive AI is an assistive research and demonstration prototype. It is **not** an automotive-certified primary safety device (such as ISO 26262 ASIL certified systems).
-> - It does **not** diagnose fatigue medically or guarantee the prevention of all accidents.
-> - It does **not** have mechanical or electrical control over the vehicle (no automated braking or steering intervention).
-> - **Nothing replaces adequate sleep:** When experiencing fatigue, the driver must immediately pull over to a safe location and rest.
-> - Never perform development debugging or software changes while operating a vehicle on public roads.
+> **Experimental Driver-Assistance Prototype Notice:**  
+> DrishtiDrive AI is an assistive research and commercial vehicle safety prototype. It is **not** an automotive-certified primary safety system (such as ISO 26262 ASIL certified electronics).
+> - It does **not** medically diagnose sleep apnea, fatigue disorders, or guarantee the prevention of all accidents.
+> - Alert thresholds (0.8s, 1.8s, 3.0s) are engineering baselines derived from driver fatigue literature and are **not medically validated**.
+> - It does **not** have mechanical control over the vehicle (no automatic emergency braking or steering intervention).
+> - **Nothing replaces adequate physical rest:** When fatigued, the driver must pull over safely at an upcoming rest area or dhaba and rest. Never operate a vehicle when impaired by extreme exhaustion.
 
 ---
 
 ## 📜 License & Acknowledgments
 
-- **Codebase:** Licensed under the [MIT License](LICENSE).
+- **Source Code:** Distributed under the [MIT License](LICENSE).
 - **YOLO Weights:** Pretrained YOLO11-Pose models (`yolo11n-pose.pt`) are subject to the AGPL-3.0 License by [Ultralytics](https://github.com/ultralytics/ultralytics).
-- **Dataset Acknowledgments:** Trained and evaluated using driver eye datasets including the MRL Eye Dataset (VSB Technical University of Ostrava) and visible-spectrum driver alertness benchmarks.
+- **Benchmark Datasets:** Evaluated using in-cabin visible-spectrum driver alertness benchmarks and the MRL Eye Dataset (VSB Technical University of Ostrava).
 
 <div align="center">
   <br/>
-  <strong>DrishtiDrive AI — A Watchful Eye on Every Journey.</strong><br/>
-  <em>Dedicated to the unsung heroes of India's highways. Drive safe, rest well.</em>
+  <strong>DrishtiDrive AI — A Watchful Eye on Every Journey</strong><br/>
+  <em>Dedicated to the commercial transport drivers keeping India moving. Drive safely, rest well.</em>
 </div>
